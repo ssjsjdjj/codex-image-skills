@@ -1,0 +1,1185 @@
+{
+  "date": "2026-11-11",
+  "main_skill_capabilities": 11,
+  "skill_directories": 12,
+  "workbenches": 1,
+  "entries": [
+    {
+      "name": "白底透明图 V2",
+      "id": "chutu-baidi-touming-v2",
+      "version": "2.4.0",
+      "purpose": "800×800 白底 JPG、透明 PNG；每款高清分层 PSD、独立蒙版；边缘检查与 PS 精修队列。",
+      "destination": "kkc/skills/chutu-baidi-touming-v2"
+    },
+    {
+      "name": "尺寸调整",
+      "id": "chutu-chicun-tiaozheng",
+      "version": "3.4.1（整批／逐张两版）",
+      "purpose": "主图和场景图按用途裁切、多尺寸导出、分组预览确认、图片与对应 PSD 数据包交付。",
+      "destination": "kkc/skills/chutu-chicun-tiaozheng"
+    },
+    {
+      "name": "小图找大图／同名替换",
+      "id": "replace-images-by-name",
+      "version": "2026-11-02 交付版",
+      "purpose": "按文件名用高清原图替换已选小图，检查重名、缺失、备份和替换结果。",
+      "destination": "kkc/skills/replace-images-by-name"
+    },
+    {
+      "name": "AI 商品差异检测",
+      "id": "ai-product-image-diff",
+      "version": "2026-11-10 更新版",
+      "purpose": "实拍与 AI 图按商品细节逐图对照，编号放大展示差异，并按指定位置修复复核。",
+      "destination": "kkc/skills/ai-product-image-diff"
+    },
+    {
+      "name": "SKU 同款换色场景套版",
+      "id": "ecom-color-scene-swap",
+      "version": "2026-10-27 版",
+      "purpose": "按款号、颜色选产品与场景图，调整裁切，替换卡片内商品及颜色文字。",
+      "destination": "kkc/skills/ecom-color-scene-swap"
+    },
+    {
+      "name": "商品视觉审稿",
+      "id": "kocotree-visual-review",
+      "version": "2026-11-02 精简版",
+      "purpose": "初稿、返稿、终稿九项审核；追踪问题关闭，保留本地审核记录和已解决案例库。",
+      "destination": "kkc/skills/kocotree-visual-review"
+    },
+    {
+      "name": "指定商品选区 PSD",
+      "id": "product-selection-psd",
+      "version": "2026-11-03 版",
+      "purpose": "在原图中选择指定商品，保留完整原图、独立商品层和可编辑蒙版。",
+      "destination": "kkc/skills/product-selection-psd"
+    },
+    {
+      "name": "详情页图片处理 Skill",
+      "id": "visual-detail-image-processor",
+      "version": "2026-11-04 本地更新版",
+      "purpose": "从 PSD／PSB 母版生成可编辑详情长图，保留智能对象、文案和表格，按需导出 JPG 模块。",
+      "destination": "kkc/skills/visual-detail-image-processor"
+    },
+    {
+      "name": "电商服饰视频提示词",
+      "id": "ecom-video-prompt",
+      "version": "2026-11-09 更新版",
+      "purpose": "基于模特参考图、商品卖点和动作撰写中文图生视频提示词；处理布料、光影和动作的 AI 感。",
+      "destination": "kkc/skills/ecom-video-prompt"
+    },
+    {
+      "name": "Lovart 服装场景图提示词",
+      "id": "lovart-apparel-prompt",
+      "version": "2026-11-10 更新版",
+      "purpose": "结合实拍、服装细节和动作场景参考，生成主提示词与局部返修词，约束质感、Logo 和指定模特。",
+      "destination": "kkc/skills/lovart-apparel-prompt"
+    },
+    {
+      "name": "AI 案例取证／使用报告",
+      "id": "ai-case-evidence",
+      "version": "1.5.0",
+      "purpose": "整理原始证据、产物、反馈、计时与人工复核，生成案例提交稿和固定模板使用报告。",
+      "destination": "kkc/skills/ai-case-evidence"
+    },
+    {
+      "name": "详情页套版工作台",
+      "id": "detail-workbench",
+      "version": "0.5.11（含 5 套母版）",
+      "purpose": "Windows 图形界面导入商品资料、绑定图片与表格、预览排版，再调用 Photoshop 生成可编辑 PSB。",
+      "destination": "kkc/workbenches/detail-workbench"
+    }
+  ],
+  "size_adjustment_variant": "kkc/skills/chutu-chicun-tiaozheng-single",
+  "workbench_release": {
+    "version": "0.5.11",
+    "templates": 5,
+    "filename": "DetailWorkbench-v0.5.11-Windows-5-templates.zip",
+    "bytes": 1240064514,
+    "sha256": "aedb451d4b613bc1731977519ea4ad18033350e5d17f45735cc71a992b3bfedb",
+    "download_url": "https://github.com/ssjsjdjj/codex-image-skills/releases/download/kkc-2026-11-11/DetailWorkbench-v0.5.11-Windows-5-templates.zip",
+    "release_url": "https://github.com/ssjsjdjj/codex-image-skills/releases/tag/kkc-2026-11-11",
+    "installation": "完整解压后运行一键安装.cmd，再运行启动工作台.cmd。需要 Windows、联网安装依赖及 Photoshop。"
+  },
+  "files": [
+    {
+      "path": "kkc/packages/ai-case-evidence.zip",
+      "bytes": 58923,
+      "sha256": "7a187ef6818ba4787d6afba39a955c764077252cf26e622873f8625c4464d329"
+    },
+    {
+      "path": "kkc/packages/ai-product-image-diff.zip",
+      "bytes": 7858,
+      "sha256": "64a04f7bc9458f222d2013557f4760e54f3e6ef2a6817b947e522c65ac4e2c73"
+    },
+    {
+      "path": "kkc/packages/chutu-baidi-touming-v2.zip",
+      "bytes": 90460,
+      "sha256": "6f8d9ddc2e5acbb342779d8e9d3b21f3a4dcb1a02d9c3297dcc429d58e693df0"
+    },
+    {
+      "path": "kkc/packages/chutu-chicun-tiaozheng-single.zip",
+      "bytes": 242507,
+      "sha256": "b0ce87228e5eb21b1f13efd7b1f84fed13f129faaf713c129348d67177a88067"
+    },
+    {
+      "path": "kkc/packages/chutu-chicun-tiaozheng.zip",
+      "bytes": 230467,
+      "sha256": "a9b651c61bf138d394c65630ab014cf0ee3d4449b652d17c6ba3eae800d74693"
+    },
+    {
+      "path": "kkc/packages/detail-workbench-v0.5.11.json",
+      "bytes": 600,
+      "sha256": "b5ea88fc4aa8ead825fb3a165a51afedb3004d08ab7d000d5ff7ddf133644780"
+    },
+    {
+      "path": "kkc/packages/detail-workbench-安装说明.md",
+      "bytes": 1844,
+      "sha256": "8df7f5181d96047371d331a589c65649db56fae23fccebebe6afb5a93458b06a"
+    },
+    {
+      "path": "kkc/packages/DetailWorkbench-v0.5.11-Windows-5-templates.zip.sha256",
+      "bytes": 114,
+      "sha256": "3952e16dbc96dacdba6e5cfb7ffd79f46bbd8861ecd9e572a9d556ef1f4c1719"
+    },
+    {
+      "path": "kkc/packages/ecom-color-scene-swap.zip",
+      "bytes": 5787,
+      "sha256": "8631fa596a1176fa0cac5e65ce9c9d39232d7102bca87fce412be0685f31fabd"
+    },
+    {
+      "path": "kkc/packages/ecom-video-prompt.zip",
+      "bytes": 4145,
+      "sha256": "f3fcd7ba44803d5a0aca2a6b1daffe90155229284d526048a9e99b8eedd6c317"
+    },
+    {
+      "path": "kkc/packages/kocotree-visual-review.zip",
+      "bytes": 30389,
+      "sha256": "037331d5c3e8af238958bf5ab9ae52c6e4399f0c75d0607b3fe18bf07d52362d"
+    },
+    {
+      "path": "kkc/packages/lovart-apparel-prompt.zip",
+      "bytes": 8941,
+      "sha256": "3a7b9ede2e7d27198fb232e1fdb4efc9eed4cfda2ae36a27bf8810a730d81ff3"
+    },
+    {
+      "path": "kkc/packages/product-selection-psd.zip",
+      "bytes": 4726,
+      "sha256": "a1fcffccc36d634238fecf133d7945277fb58b8efda8181cf474f1cd8c19ef81"
+    },
+    {
+      "path": "kkc/packages/replace-images-by-name.zip",
+      "bytes": 13120,
+      "sha256": "c34177ca1ce882a1d80e3c8e089eeea0871d173cf38d448ee8aad311707b41da"
+    },
+    {
+      "path": "kkc/packages/visual-detail-image-processor.zip",
+      "bytes": 8738844,
+      "sha256": "ae385d64dd6c05b4ed6ec1efb6c54592e27e49858c8ae55b61d601a9df6ad487"
+    },
+    {
+      "path": "kkc/README.md",
+      "bytes": 6080,
+      "sha256": "1dcf909a652565a0f8e39267e14e118e3d471cef544033ede22453c5795fd28d"
+    },
+    {
+      "path": "kkc/skills/ai-case-evidence/agents/openai.yaml",
+      "bytes": 318,
+      "sha256": "de55a5df9893bd113ef5e692b2bfd0422d42ec11c1bd778c0c37264c12956dd9"
+    },
+    {
+      "path": "kkc/skills/ai-case-evidence/assets/codex-usage-prompt.txt",
+      "bytes": 5566,
+      "sha256": "286950afcfe6734a1c89001c3171ec14b7e0ae90c0d9dfe7f8adbe1d7409a569"
+    },
+    {
+      "path": "kkc/skills/ai-case-evidence/references/correction.md",
+      "bytes": 6469,
+      "sha256": "1a5d82e35b0806588c8e1da6cad5deeb22b87c89f6ea53bbcb3cafec92537d4f"
+    },
+    {
+      "path": "kkc/skills/ai-case-evidence/references/coverage.md",
+      "bytes": 3282,
+      "sha256": "6ec3a035df7b40aaab07afe3d9d889e04822c7e98bd14eff4a9f353ffe6d9929"
+    },
+    {
+      "path": "kkc/skills/ai-case-evidence/references/feishu-layout.md",
+      "bytes": 6493,
+      "sha256": "a2479ba4caced1f4e74f5282e3e13ad78f4b4f7368b23e7a170ace6a9ee90810"
+    },
+    {
+      "path": "kkc/skills/ai-case-evidence/references/rubric.md",
+      "bytes": 3507,
+      "sha256": "803f2a48c11ba5200d836277270105135961dac7aa5c166f0f87c500aab076eb"
+    },
+    {
+      "path": "kkc/skills/ai-case-evidence/references/timing.md",
+      "bytes": 5983,
+      "sha256": "fa1757108bc41f8019c2b7d0f39bf29960036f709d165a739a6e8598a8a2863b"
+    },
+    {
+      "path": "kkc/skills/ai-case-evidence/references/workflow.md",
+      "bytes": 8997,
+      "sha256": "9ee613784c09c335a5fea0ba5a09c3b592a8a6db560e1f0df917e3cb0f37752c"
+    },
+    {
+      "path": "kkc/skills/ai-case-evidence/references/writing.md",
+      "bytes": 9034,
+      "sha256": "038abb36c36966af759b53abd90468f0832cc25a2827cea79a34c4f3fdc97d99"
+    },
+    {
+      "path": "kkc/skills/ai-case-evidence/scripts/evidence.py",
+      "bytes": 31994,
+      "sha256": "90e71194131b8033e891b151903803f7dcf11832b594b8bbbdc16fa63aedafce"
+    },
+    {
+      "path": "kkc/skills/ai-case-evidence/scripts/report_preflight.py",
+      "bytes": 5277,
+      "sha256": "a23fd67834e2fdd1e24e3da6e65f353d4d99a985f351829b7b91e53b47f9243d"
+    },
+    {
+      "path": "kkc/skills/ai-case-evidence/scripts/reporting.py",
+      "bytes": 13987,
+      "sha256": "ccf54d696b102088c2f43accd43ebaf03def019ecd3563d0ca682c3409f708c1"
+    },
+    {
+      "path": "kkc/skills/ai-case-evidence/scripts/run_journal.py",
+      "bytes": 15454,
+      "sha256": "54132f30ddb8afd06a085ac372e104886a1338dfa0403ee652f48e9ecf174ec9"
+    },
+    {
+      "path": "kkc/skills/ai-case-evidence/scripts/timing_commands.py",
+      "bytes": 10181,
+      "sha256": "bd0e6dd8faef8b13f58a47db6efec5805a02b1647baf4891ee37881483f039c9"
+    },
+    {
+      "path": "kkc/skills/ai-case-evidence/scripts/timing_coverage.py",
+      "bytes": 5350,
+      "sha256": "70c04ef22ca95ef2717f3cd580a1abe87f87b860e71e0663d899e6ca12fb3ef2"
+    },
+    {
+      "path": "kkc/skills/ai-case-evidence/SKILL.md",
+      "bytes": 11294,
+      "sha256": "833de4270a5b5d37a14625814a6d1550b09468b92b7da87f78f1e2d2171ff120"
+    },
+    {
+      "path": "kkc/skills/ai-product-image-diff/agents/openai.yaml",
+      "bytes": 408,
+      "sha256": "45d0d9ce1e43d7fe7686ebeddeceaf4390888a4894786c22f93cf6be26e05c8c"
+    },
+    {
+      "path": "kkc/skills/ai-product-image-diff/references/repair-workflow.md",
+      "bytes": 4839,
+      "sha256": "e1bdff2271b7071f89611488eb65376939929c2fb49e64306c8b1644aa5e5e25"
+    },
+    {
+      "path": "kkc/skills/ai-product-image-diff/SKILL.md",
+      "bytes": 8629,
+      "sha256": "4f4a6d267d2e525815e9b6f81c7547b15a5c9cd084e9142dd1eb0ded3c95f83b"
+    },
+    {
+      "path": "kkc/skills/chutu-baidi-touming-v2/agents/openai.yaml",
+      "bytes": 320,
+      "sha256": "190fa7934f382dc35e8d8c724e76bb3cc4e6eac8030f540d033cd9ec9ab39e98"
+    },
+    {
+      "path": "kkc/skills/chutu-baidi-touming-v2/references/ps-queue.md",
+      "bytes": 8473,
+      "sha256": "bb59799e30be9ddf5e140bdefab072fcad830911d923a6245079ee88a7b0272d"
+    },
+    {
+      "path": "kkc/skills/chutu-baidi-touming-v2/references/timing.md",
+      "bytes": 4505,
+      "sha256": "bfd3b3a638f93b02ff80276270ccd8a1cbd5f213804ca1339e080c2d5d7fe6e8"
+    },
+    {
+      "path": "kkc/skills/chutu-baidi-touming-v2/references/workflow.md",
+      "bytes": 8027,
+      "sha256": "4e50199b9e1b2c050fde65e4fd894697dbf4d67dc2c5196fe503445a1d365c92"
+    },
+    {
+      "path": "kkc/skills/chutu-baidi-touming-v2/scripts/bg_assets.py",
+      "bytes": 20775,
+      "sha256": "b38068bde801c811a92c440ab8949f1035aeff8e902c618ee52124025a44e117"
+    },
+    {
+      "path": "kkc/skills/chutu-baidi-touming-v2/scripts/edge_quality.py",
+      "bytes": 9418,
+      "sha256": "77b1d2ee94e95068081745f132bc452eec899ef287cc87303a3cd6207bbbf562"
+    },
+    {
+      "path": "kkc/skills/chutu-baidi-touming-v2/scripts/hd_mask_psd.py",
+      "bytes": 12620,
+      "sha256": "4555eccc9a50d539350c994d1a5fd8288e6220aee6cc8c0189d2d157adb22276"
+    },
+    {
+      "path": "kkc/skills/chutu-baidi-touming-v2/scripts/image_size_limit.py",
+      "bytes": 5896,
+      "sha256": "ada361f4fbc041c7d26ea27d2dd6747c12937db16fbb9fdee9fb8827cdb63733"
+    },
+    {
+      "path": "kkc/skills/chutu-baidi-touming-v2/scripts/launch.py",
+      "bytes": 3900,
+      "sha256": "dc36b4c7845d0865c107775437b3767be8c8025fdb04734b74f75c528a34b613"
+    },
+    {
+      "path": "kkc/skills/chutu-baidi-touming-v2/scripts/local_masks.py",
+      "bytes": 3764,
+      "sha256": "f381873e32be8798abcd8031f1b5714a092e5978459525c76da80bb53f6b339d"
+    },
+    {
+      "path": "kkc/skills/chutu-baidi-touming-v2/scripts/ps_retouch_queue.py",
+      "bytes": 14576,
+      "sha256": "5bbea850644cea80ef6e874715467c0a4e7ec7dfcb1f1dcb302c0607439a9ad1"
+    },
+    {
+      "path": "kkc/skills/chutu-baidi-touming-v2/scripts/quality_pipeline.py",
+      "bytes": 25988,
+      "sha256": "e0d8f4c1f598c7f65828328eee905e5d85e1461a4c0d0fdbc6661ceb21d4dbeb"
+    },
+    {
+      "path": "kkc/skills/chutu-baidi-touming-v2/scripts/run_bg.ps1",
+      "bytes": 664,
+      "sha256": "03da74c36df4f27ef1f393e1d8a22608c00ff666a9ff39300c768d57e5a2bf05"
+    },
+    {
+      "path": "kkc/skills/chutu-baidi-touming-v2/scripts/run_journal.py",
+      "bytes": 15454,
+      "sha256": "54132f30ddb8afd06a085ac372e104886a1338dfa0403ee652f48e9ecf174ec9"
+    },
+    {
+      "path": "kkc/skills/chutu-baidi-touming-v2/scripts/selftest.py",
+      "bytes": 17340,
+      "sha256": "7af680f8e942e045a410f0b7d731b8170ea52fd357c3b221e8254042a49b2771"
+    },
+    {
+      "path": "kkc/skills/chutu-baidi-touming-v2/scripts/selftest_hd_masks.py",
+      "bytes": 14827,
+      "sha256": "c8108c107f1db342809f1a3cb9bcc5ecc4c6d818f7af88e3162c8522d0cf369f"
+    },
+    {
+      "path": "kkc/skills/chutu-baidi-touming-v2/scripts/selftest_image_size.py",
+      "bytes": 7181,
+      "sha256": "615d0eb469d838ee1b64cce8f80aff17c19e974fd3d3e1bb5724d3e81dd416c4"
+    },
+    {
+      "path": "kkc/skills/chutu-baidi-touming-v2/scripts/selftest_ps_queue.py",
+      "bytes": 19409,
+      "sha256": "187f4d8d410ca418776d18ffdb1821c394d2c65f2bdf0666133ad477ddfc7881"
+    },
+    {
+      "path": "kkc/skills/chutu-baidi-touming-v2/SKILL.md",
+      "bytes": 13698,
+      "sha256": "1076666d1cb83c3a628a68af1105c04687e3c8adcc3934dd5ea640b089cba619"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng/assets/personal_prompt.example.md",
+      "bytes": 7703,
+      "sha256": "04b2d3657df7e189fe8cb03720a44a2af5156025314280947118b36bee5fd2aa"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng/assets/psd_source_worker.jsx",
+      "bytes": 17321,
+      "sha256": "baf8bd9b569e01a34bf1e3a7eba589feadb684b905b2854759d9c63452c23454"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng/assets/renderer.py",
+      "bytes": 26737,
+      "sha256": "0b4f3dc9a08744ba1f7b1552913a51fb8d4a7267328d3c92b736f2685e86eb60"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng/assets/settings.example.json",
+      "bytes": 461,
+      "sha256": "70f272998033a24d34983949a4a0cd36f91e1ff177aca3e9035c0fb1b2cb77ea"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng/references/delivery.md",
+      "bytes": 5356,
+      "sha256": "75ba56d013826b69137fff7e96182332c0afcc74fefb8ed3f23a03365154f431"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng/references/feedback-workflow.md",
+      "bytes": 12494,
+      "sha256": "11bfa8033695abec329210bd4425d8b7282ad8919bb7a0229762de794cbd23e9"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng/references/framing.md",
+      "bytes": 6190,
+      "sha256": "17b90809ced94881603e1bb9fed81dcf16ae2c7fd74f2e538eeffca34f100d7f"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng/references/product-focus.md",
+      "bytes": 4680,
+      "sha256": "f4cba87172b23f12d274e340d5f75eb74fe5bc9b51c1df0780a4023235d9e4ea"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng/references/windows-portable.md",
+      "bytes": 3855,
+      "sha256": "a003fdef441c6f72240ebfbce4739879fe108b489cb6bdd080d9a519308202c9"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng/scripts/backend_policy.py",
+      "bytes": 8132,
+      "sha256": "3edd0dea2a3e55fef2f98d0200c07e2091fc80e9c7cbca3951f39b3a07f7e539"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng/scripts/batch_preview.py",
+      "bytes": 2422,
+      "sha256": "cba43cde9c0af3fc48d723317761768d88a20c97fbc4c632a00bbfc4cb9921b8"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng/scripts/delivery_notes.py",
+      "bytes": 23617,
+      "sha256": "a471d11e0c04aead58df8a46ff8fe7b37d89a83bc46baa67435c71b5f06ba863"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng/scripts/delivery_pack.py",
+      "bytes": 14587,
+      "sha256": "408c76d5479416654a2662235083e0dfa989df50f105dd0f9c2ff1be682dbde5"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng/scripts/delivery_spec.py",
+      "bytes": 14474,
+      "sha256": "61f2659302cee87bb54432a8b1544e572e741891c1b09eb13a77e859aaf382d7"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng/scripts/export_policy.py",
+      "bytes": 4887,
+      "sha256": "daa8d95af9d92cfe16964e8b6bcfbebcb9971a2dcea303a22f74d65c720c7325"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng/scripts/layered_psd.py",
+      "bytes": 10386,
+      "sha256": "5c261344dae94679cff7096895b46a6b3a9a9c3d71ef27e192b85e6e5f4d61c2"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng/scripts/prepare_initial.py",
+      "bytes": 1637,
+      "sha256": "1a627435447ebe4c4613a8d7b4cf4b92d1ee3f7aa459df50994c932d114f29af"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng/scripts/processing_router.py",
+      "bytes": 8519,
+      "sha256": "4e24c5d36f9856cf0b273298a5b9420850e44143e20ae16bdf70b43d20f567f8"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng/scripts/psd_source.py",
+      "bytes": 19679,
+      "sha256": "b35938f2c69c107dc8417eabb870025021d4ad0cb65eb025bde3199ba54e2eb4"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng/scripts/python_psd.py",
+      "bytes": 21849,
+      "sha256": "d037e5319ead45e1a11db7c64ac7e1eee52d9e89fa32a72d7f2c2a3bf0a3d6d6"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng/scripts/resize_assets.py",
+      "bytes": 16185,
+      "sha256": "d1beef3e686eb9e864979c96fa30c290f67c3142d5a84e47628f8bc7bc394f22"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng/scripts/review_queue.py",
+      "bytes": 34019,
+      "sha256": "782e34b314c14ae109dcbb3b4d2017475b19d8aed7ed44d5a6e6bcaefd760544"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng/scripts/run_photoshop.ps1",
+      "bytes": 4007,
+      "sha256": "1d13a82a85427707e0572b585e077f5dc777ca5820811625c39849aee9874e5a"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng/scripts/run_profile.ps1",
+      "bytes": 542,
+      "sha256": "bf5268b1e5a7615799494b4f042a58af5aff1edc7f7a3d99f5ef12e739adf8ab"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng/scripts/run_resize.ps1",
+      "bytes": 543,
+      "sha256": "cd84ea14f7e22c3edcff6420cdefd218afc4977e91093416831a55070d085dbb"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng/scripts/task_spec.py",
+      "bytes": 1165,
+      "sha256": "cebf2b09a76eada9825076dc07ce01fc4f1a25e7737388b0b30bd77319b4d68e"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng/scripts/user_profile.py",
+      "bytes": 32279,
+      "sha256": "ad1d14f7ca881c24a5232b0cf0c2fd7921e30783ace324d131d07b0a2503ea38"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng/scripts/validate_candidate.py",
+      "bytes": 10541,
+      "sha256": "4924debc47b42bc7122ea250d938f4624f3608444e73acfbba92cde458dcd630"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng/SKILL.md",
+      "bytes": 7389,
+      "sha256": "6415822304f7be540037287511b9169f62e45e6552320dd3742ce300ea97218e"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng-single/assets/personal_prompt.example.md",
+      "bytes": 7596,
+      "sha256": "808304219f8f80c6a27fa25a54acfd1c7b1c85239b6598ad91715513c2679b07"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng-single/assets/psd_source_worker.jsx",
+      "bytes": 17321,
+      "sha256": "baf8bd9b569e01a34bf1e3a7eba589feadb684b905b2854759d9c63452c23454"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng-single/assets/renderer.py",
+      "bytes": 26737,
+      "sha256": "0b4f3dc9a08744ba1f7b1552913a51fb8d4a7267328d3c92b736f2685e86eb60"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng-single/assets/settings.example.json",
+      "bytes": 461,
+      "sha256": "70f272998033a24d34983949a4a0cd36f91e1ff177aca3e9035c0fb1b2cb77ea"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng-single/references/delivery.md",
+      "bytes": 5219,
+      "sha256": "f3fac9eb7a789f6367722b9f506d1882142fb852a6d7eef2f55557a84c2396fc"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng-single/references/feedback-workflow.md",
+      "bytes": 12437,
+      "sha256": "cf4196c0638205a31aec8f338eb2218aee908dd528d566f3efa48bad95844711"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng-single/references/framing.md",
+      "bytes": 2781,
+      "sha256": "7cbefe510c839352269309627fb623c680ebe0217fdac194e518e086490861dc"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng-single/references/product-focus.md",
+      "bytes": 4559,
+      "sha256": "ad9498874e2ef874554e66cd55d5bf1032144b79028e68c88ef85cd1d9827f76"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng-single/references/windows-portable.md",
+      "bytes": 3954,
+      "sha256": "9a63a087e4bfce7b7f0e12904a5218ada956a550c909fbc3b8608824f9893169"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng-single/scripts/backend_policy.py",
+      "bytes": 8132,
+      "sha256": "3edd0dea2a3e55fef2f98d0200c07e2091fc80e9c7cbca3951f39b3a07f7e539"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng-single/scripts/batch_preview.py",
+      "bytes": 2422,
+      "sha256": "cba43cde9c0af3fc48d723317761768d88a20c97fbc4c632a00bbfc4cb9921b8"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng-single/scripts/delivery_notes.py",
+      "bytes": 23430,
+      "sha256": "8a8e7f8c257df2ebe099795ce769db2c03c9b95e39f36ac6154465bde0a60981"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng-single/scripts/delivery_pack.py",
+      "bytes": 14587,
+      "sha256": "408c76d5479416654a2662235083e0dfa989df50f105dd0f9c2ff1be682dbde5"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng-single/scripts/delivery_spec.py",
+      "bytes": 14474,
+      "sha256": "61f2659302cee87bb54432a8b1544e572e741891c1b09eb13a77e859aaf382d7"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng-single/scripts/export_policy.py",
+      "bytes": 4887,
+      "sha256": "daa8d95af9d92cfe16964e8b6bcfbebcb9971a2dcea303a22f74d65c720c7325"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng-single/scripts/layered_psd.py",
+      "bytes": 10386,
+      "sha256": "5c261344dae94679cff7096895b46a6b3a9a9c3d71ef27e192b85e6e5f4d61c2"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng-single/scripts/prepare_initial.py",
+      "bytes": 1637,
+      "sha256": "1a627435447ebe4c4613a8d7b4cf4b92d1ee3f7aa459df50994c932d114f29af"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng-single/scripts/processing_router.py",
+      "bytes": 8519,
+      "sha256": "4e24c5d36f9856cf0b273298a5b9420850e44143e20ae16bdf70b43d20f567f8"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng-single/scripts/psd_source.py",
+      "bytes": 19679,
+      "sha256": "b35938f2c69c107dc8417eabb870025021d4ad0cb65eb025bde3199ba54e2eb4"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng-single/scripts/python_psd.py",
+      "bytes": 21499,
+      "sha256": "46eea281e092ba7257e0cab1aa91ce72fd20bbf1fc777d1067dfa9e9e08bd49e"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng-single/scripts/resize_assets.py",
+      "bytes": 16523,
+      "sha256": "816b3ce2c2075322272ca36463042a2208c30e6c5ea32cd8f14023aea5e86077"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng-single/scripts/review_queue.py",
+      "bytes": 35386,
+      "sha256": "8ee79c869c54221c45b816f424234bb20f3bd91244b6a1baf805c72743e613cd"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng-single/scripts/run_photoshop.ps1",
+      "bytes": 4010,
+      "sha256": "56da8efd8a51e5e367698c2f7f652ed0bd7a17302146d537e9a51c032cd5c197"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng-single/scripts/run_profile.ps1",
+      "bytes": 532,
+      "sha256": "937dddad18f1bf99308bcad1c47f4f5422b05b76344855a0c46599a31b369d8c"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng-single/scripts/run_resize.ps1",
+      "bytes": 533,
+      "sha256": "f7d2fa8e04813fbecb35e9811c2d9dfee7bf6da3129f6718d3fb676b9cffca48"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng-single/scripts/task_spec.py",
+      "bytes": 1165,
+      "sha256": "cebf2b09a76eada9825076dc07ce01fc4f1a25e7737388b0b30bd77319b4d68e"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng-single/scripts/user_profile.py",
+      "bytes": 32285,
+      "sha256": "0957e2ceb226ac4ebdf2059a4aa7e8aabc150b6948f7354331f2b6fb68235aba"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng-single/scripts/validate_candidate.py",
+      "bytes": 10541,
+      "sha256": "4924debc47b42bc7122ea250d938f4624f3608444e73acfbba92cde458dcd630"
+    },
+    {
+      "path": "kkc/skills/chutu-chicun-tiaozheng-single/SKILL.md",
+      "bytes": 7438,
+      "sha256": "50a23e13528c58eec770906435bafb5395e859bc1f783fd63e21ad545f104055"
+    },
+    {
+      "path": "kkc/skills/ecom-color-scene-swap/agents/openai.yaml",
+      "bytes": 371,
+      "sha256": "301751f8e380258e60242195396c61150722863fd0669e519340eca1cecafae1"
+    },
+    {
+      "path": "kkc/skills/ecom-color-scene-swap/references/task-format.md",
+      "bytes": 3362,
+      "sha256": "6739db95aab26ee7f05da53a9659f3bfecff2b2c9ecc69972502399fadaf40a7"
+    },
+    {
+      "path": "kkc/skills/ecom-color-scene-swap/SKILL.md",
+      "bytes": 6546,
+      "sha256": "e20cb900c787a7cd57623ad790b4bd54e09b884502a60caf0fd6434e10aa6177"
+    },
+    {
+      "path": "kkc/skills/ecom-video-prompt/SKILL.md",
+      "bytes": 7952,
+      "sha256": "d65a45d30728be69c1d94c6c372662e8ff6a4cf5d2a74c84018c2c6f04ea7885"
+    },
+    {
+      "path": "kkc/skills/kocotree-visual-review/assets/review-template.json",
+      "bytes": 2828,
+      "sha256": "ef9459adf04f82ba3b346567af158152b72e57457c2b1e0cbc17e76d0c823be6"
+    },
+    {
+      "path": "kkc/skills/kocotree-visual-review/references/case-library.md",
+      "bytes": 4620,
+      "sha256": "def26480180b866ce9f0684a09bf0bbc83387e6b6a6b04d762a220e5b6b06374"
+    },
+    {
+      "path": "kkc/skills/kocotree-visual-review/references/designer-growth.md",
+      "bytes": 1276,
+      "sha256": "b27199bc943c79f65149d56e72ad55536096cbf7ed2eaadb3fb2682627b9645a"
+    },
+    {
+      "path": "kkc/skills/kocotree-visual-review/references/record-schema.md",
+      "bytes": 6003,
+      "sha256": "51bf6c2bfded2561a89a106e1ee03b7fde700861a84c22fd3e0a173c0f4e99cd"
+    },
+    {
+      "path": "kkc/skills/kocotree-visual-review/references/rubric.md",
+      "bytes": 5250,
+      "sha256": "f1f024f5bf2dcfa7c0fc15ec4894358a71a660aa93b7ded17db288d94a3f135d"
+    },
+    {
+      "path": "kkc/skills/kocotree-visual-review/scripts/build_case_library.py",
+      "bytes": 11079,
+      "sha256": "191553712b4049630bb7d0f4515671a32dae67d4cc43dc2e13575f7529f4c287"
+    },
+    {
+      "path": "kkc/skills/kocotree-visual-review/scripts/search_cases.py",
+      "bytes": 3385,
+      "sha256": "5eed011058623fa22ae2a04545a99949934407a98f482f7da52239dddf1a3783"
+    },
+    {
+      "path": "kkc/skills/kocotree-visual-review/scripts/test_case_library.py",
+      "bytes": 10392,
+      "sha256": "b7d1d2a23edf5d2893c2c06eb5a216135f5ca5adb4d6ca2d55972093353e4d6f"
+    },
+    {
+      "path": "kkc/skills/kocotree-visual-review/scripts/test_cli.py",
+      "bytes": 5734,
+      "sha256": "dc506225a806318e971a7637f065864eed77d729bdddb36bf92b66215d1a03f3"
+    },
+    {
+      "path": "kkc/skills/kocotree-visual-review/scripts/test_validate_review.py",
+      "bytes": 9998,
+      "sha256": "2f38efff896077b78ca91d10aa0b0a539ff3a241daee24bd8a09e75c0a4369a2"
+    },
+    {
+      "path": "kkc/skills/kocotree-visual-review/scripts/validate_review.py",
+      "bytes": 16591,
+      "sha256": "e0eafed9c6a4f0f8ca539f645a92fd4cdf94a2fccfb52cf03f0cc2f51d2c5593"
+    },
+    {
+      "path": "kkc/skills/kocotree-visual-review/SKILL.md",
+      "bytes": 5327,
+      "sha256": "53900e81c1a6696fcd7ff12e066ed011507778f5be5c0ba84d4555b191ab9cb6"
+    },
+    {
+      "path": "kkc/skills/lovart-apparel-prompt/agents/openai.yaml",
+      "bytes": 408,
+      "sha256": "c0b4ae54b3a2bb22babbb0b46fd4a410f04d5d2276bb1311c21c457b7457261d"
+    },
+    {
+      "path": "kkc/skills/lovart-apparel-prompt/references/hula-example.md",
+      "bytes": 3712,
+      "sha256": "5a4a8e3a808973bf6e7e5f103ab215083cee5859fa5c8aa4c5611dd637e55b1f"
+    },
+    {
+      "path": "kkc/skills/lovart-apparel-prompt/references/prompt-patterns.md",
+      "bytes": 5145,
+      "sha256": "b851d03c61e21fb866d4576bc057b16da170d4af18d03d7a9fcc92090a95e2a9"
+    },
+    {
+      "path": "kkc/skills/lovart-apparel-prompt/SKILL.md",
+      "bytes": 6398,
+      "sha256": "02d33cac2c13ea4e7e7537241a92ac98b73d399a1f6c5eca5f385d84bb0748c9"
+    },
+    {
+      "path": "kkc/skills/product-selection-psd/references/photoshop-export.md",
+      "bytes": 1536,
+      "sha256": "cf2eeb10d309b83df1187558638799bad976bb0e4ca27a0a95eafb39b44a915c"
+    },
+    {
+      "path": "kkc/skills/product-selection-psd/scripts/export-selection.jsx",
+      "bytes": 5795,
+      "sha256": "a369ba1ab7d79c8f9ead8ed98210b700af8bc407922d51f2e73cfbb63e4d9b82"
+    },
+    {
+      "path": "kkc/skills/product-selection-psd/SKILL.md",
+      "bytes": 2512,
+      "sha256": "c42efe9fb45422094e5a97775aa2fc0e8f528d0ec81541c5d09a2ed3c5e8a5a7"
+    },
+    {
+      "path": "kkc/skills/replace-images-by-name/agents/openai.yaml",
+      "bytes": 308,
+      "sha256": "643f9c63ac475186be7fbcae5fd158d4463a878fa61dc5f04f1f1b970216bc03"
+    },
+    {
+      "path": "kkc/skills/replace-images-by-name/references/case-2026-11-02-warm-hooded-jacket.md",
+      "bytes": 2166,
+      "sha256": "b7a0789d10c6374258ef27e1138d2b7086161f982960c84b99e7ffa0412ee5ea"
+    },
+    {
+      "path": "kkc/skills/replace-images-by-name/references/overview-zh.md",
+      "bytes": 1627,
+      "sha256": "e4eff1ccb7f73db755f13cb4e5859e433bfbf81b51afaa288ce98d868d65365a"
+    },
+    {
+      "path": "kkc/skills/replace-images-by-name/scripts/create_confirmation_manifest.ps1",
+      "bytes": 5723,
+      "sha256": "ac3d38efb544e1850747aeb08a16bb217a71b8d83984154e8a182ec69b38af13"
+    },
+    {
+      "path": "kkc/skills/replace-images-by-name/scripts/replace_images_by_name.ps1",
+      "bytes": 17563,
+      "sha256": "768c682ea6a2c964ef0ae4d40ca47526e1b5a2eb01e1ad6dfb1f7a4098231df6"
+    },
+    {
+      "path": "kkc/skills/replace-images-by-name/SKILL.md",
+      "bytes": 7563,
+      "sha256": "faf29ff98847fdd65acc7ded0eaab807ebcdc628b3b55efc9c4263605da3e79e"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/agents/openai.yaml",
+      "bytes": 330,
+      "sha256": "599be340e00c8ffa5ad4600f9e55100dd6076d38a9a93a17fd4c5cb54e45ca61"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/assets/G8321-MEDIUM.OTF",
+      "bytes": 13700,
+      "sha256": "d1838404fd1622b2f69552ee95839679af662ae9c604ddb3ed1bbd1d86d867a1"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/assets/KocoDetailFangYuan-SemiBold.ttf",
+      "bytes": 2637448,
+      "sha256": "3ae1443227e3b8df52bccf8e528e207a6190484cae397ec6f957a0a89e849b99"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/assets/方正兰亭中黑_GBK-Regular.ttf",
+      "bytes": 7686396,
+      "sha256": "134d40dd3e3a9c620082f94ad273067c781b8decdf58b09b477e5fa9037d8656"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/assets/阿里妈妈方圆体-SemiBold.ttf",
+      "bytes": 2637448,
+      "sha256": "a0e8d33dd575534605cb33143bb03831aa46bb8e939d51895243534838effbf0"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/references/01-批量执行规则.md",
+      "bytes": 3245,
+      "sha256": "ab79d330a451b9be49a23f1d9c5f7258f60601a2ba161d650890ccec66ecf48d"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/references/02-内置资源规则.md",
+      "bytes": 783,
+      "sha256": "19fbf0cc1808b46fb8f898b2bc92cd3f1e010fa4532425657580954bca2c4644"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/references/03-内置模板资源规则.md",
+      "bytes": 1181,
+      "sha256": "e58abcb2a22e32636ad40ffb6b241a51b559cf082277d868cc28302341afe129"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/references/04-图片表格转数据规则.md",
+      "bytes": 5344,
+      "sha256": "508da552501479d76abe6bce5c98265d4a3114e45ac5327836f031f5c5506c33"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/references/05-字体与文字规则.md",
+      "bytes": 2283,
+      "sha256": "afb00e8fad57196d836849dcf3dc4723dbdb7604a849bfbecb3d0bf4d02dffdd"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/references/06-产品信息规则.md",
+      "bytes": 2325,
+      "sha256": "6c3ccdec004c2ec529135593e02314e662a13845864e5097a8b383e2d185e800"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/references/07-透明图规则.md",
+      "bytes": 1774,
+      "sha256": "50705d75934e2941356a53bef937d66e860c21a342c50ceb422f35015bb34c69"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/references/08-表格规则.md",
+      "bytes": 2070,
+      "sha256": "ec15d733f1a321d67d4b24446fec112540011105447bf903b46cf4dbf0d10b18"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/references/09-模特图规则.md",
+      "bytes": 5275,
+      "sha256": "107d2143a0f42e35dbed471a42f3a31e24b85fe2876482c963d9082323d8b3b5"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/references/10-智能模特图选框规则.md",
+      "bytes": 2101,
+      "sha256": "789407db67d6ad7ce5d18d5c88d182f7b4753abe8a5659275447b091a49242e3"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/references/11-脚本说明.md",
+      "bytes": 3884,
+      "sha256": "a427e7d6e863fc2b9466478f272ffb7e79bf5cc6a6ab3f781604180c9d07f5c4"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/references/12-商品数据结构.md",
+      "bytes": 1887,
+      "sha256": "f11603f304e34c2bb17e953c633ed64482a349c619354f3b8ec86586e0286f83"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/references/13-Photoshop分层文件规则.md",
+      "bytes": 3057,
+      "sha256": "b29899aa8e27fbae909e67404a05f42779464c83a67ea102179a5282845512f8"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/references/13-可编辑长图PSD规则.md",
+      "bytes": 8611,
+      "sha256": "ed409d05a4b8e751c54cc3e7f9c27878b00e25d63f78c85cec0d72893b30e055"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/scripts/adaptive_detail_tables.jsx",
+      "bytes": 9292,
+      "sha256": "0fefa6a52b3dd80a6509e445a9892c2f717ab2f39da2d423929e47377f5afe3d"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/scripts/build_editable_long_psd.py",
+      "bytes": 8578,
+      "sha256": "dcb88a33fdca31d87501873caf56892d20925a5e787b98f00afb58c92f79810c"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/scripts/create_layered_psd_package.py",
+      "bytes": 26151,
+      "sha256": "d7b231466f9d8bdf009156ceeaef698abb881d874d0809e20e0cd9b2b5cdc3ad"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/scripts/create_product_data_template.py",
+      "bytes": 1510,
+      "sha256": "d6276423b415ce03522055d601a40ed95cee669f84aafe197ab37416f8b77e94"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/scripts/detail_template_replacer_2000.py",
+      "bytes": 28383,
+      "sha256": "a45c24618e6bf892bdc7ab6530cba27dc1400611d855e9e65d1e8b65e44849cc"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/scripts/editable_long_psd.jsx",
+      "bytes": 16279,
+      "sha256": "06dc4a3ddd948f7a400f4be424a3f20a8845265b6e1f4208ccbe261f94204d0b"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/scripts/main.py",
+      "bytes": 123,
+      "sha256": "6b3c760bbdd00d2f64607bfde74d214aa37a266080e7d944002ef36dad49d227"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/scripts/mixed_detail_fonts.jsx",
+      "bytes": 4310,
+      "sha256": "a19395f2cc0de2527170a6f0cc0f79fc80563e0c8c6090155c254129bc826d42"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/scripts/native_detail_template.jsx",
+      "bytes": 5372,
+      "sha256": "8b0919b46f7689c9392bb6a13e7782991573c4ddf4817b4223c802aef9e8dd42"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/scripts/pyproject.toml",
+      "bytes": 240,
+      "sha256": "c9b7d95de2732f6e4ba49f52029e1461485d2c36f8c7c89822cdbbeef7a2529e"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/scripts/run_photoshop_jsx.ps1",
+      "bytes": 241,
+      "sha256": "00d5e3234893d33c2164f003f849cf5c2a8c2acc9071e5fd33eb30c66cc5a268"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/scripts/template_profile.json",
+      "bytes": 223,
+      "sha256": "43ee5061636c575c73ceb199f651fb4e0935bc6577018f0c58b1c48d8eb53cc8"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/scripts/validate_product_data.py",
+      "bytes": 3383,
+      "sha256": "2803f7d908b94e4e2822361ec0b9f9afc1d214717dca1d9bc0c18b9fba23d56d"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/SKILL.md",
+      "bytes": 9477,
+      "sha256": "b87fc0e2ab36b6608af31220bec78573330d73964f7390312292a65d042eca00"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/template/01产品信息.jpg",
+      "bytes": 221935,
+      "sha256": "a67a00b5b4d65286d92dac6d9fec2f73dd6c0370c073060218e7e24e4b90e7c9"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/template/02透明图.jpg",
+      "bytes": 613800,
+      "sha256": "3e7c7235d0580aa57e53fe859d61569612cdc9a2628c554bf97e389a0ed82d89"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/template/03选尺码.jpg",
+      "bytes": 232869,
+      "sha256": "57a14f2db37d86fa26d0e0e6cb76fc1be71b396b6d8b98aba6fa045c073d528e"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/template/04推荐尺码.jpg",
+      "bytes": 356993,
+      "sha256": "c6f80597ddfc88aef13c75268c62624a39fddd77e3ab9b50eb1aad9ecc1cde68"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/template/05尺码快选.jpg",
+      "bytes": 268237,
+      "sha256": "647d3e84325fb70eb152b675d25f12bec58d48a5d226137d9a196b6cc423f18d"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/template/模特图1.jpg",
+      "bytes": 543520,
+      "sha256": "ca70d03b6b6cae88184b6718b4c338291b2019798c978e2116d3a20db29a24fa"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/template/模特图2.jpg",
+      "bytes": 361480,
+      "sha256": "e02523cd56a08bad787da87d02004cf824a2ca277e853cc82ef2e930f7b1a0ac"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/template/模特图2覆盖.png",
+      "bytes": 63219,
+      "sha256": "e91854b64d759f7e0ba9002ea1c09e2b027d1d7df40b4d1ddd8c6f2259c4e202"
+    },
+    {
+      "path": "kkc/skills/visual-detail-image-processor/template/模特图3.jpg",
+      "bytes": 450139,
+      "sha256": "ad63a487880323676fadab76ad2afd435635d6ef7b1089fa53a0e793c984eec7"
+    },
+    {
+      "path": "kkc/workbenches/detail-workbench/app.py",
+      "bytes": 100374,
+      "sha256": "6fb805d77b76933dcc212bd120bf5fe35c9e6e069b08222dfe3dc4e31285d9ef"
+    },
+    {
+      "path": "kkc/workbenches/detail-workbench/crop_editor.py",
+      "bytes": 18484,
+      "sha256": "147171674241bd19736d1fad9ea635f3d265d671f8180c11630d23ee778283ad"
+    },
+    {
+      "path": "kkc/workbenches/detail-workbench/engine/adaptive_detail_tables.jsx",
+      "bytes": 9540,
+      "sha256": "8d10489396021a8b0892f33b6312f494df2ed272d89adb1ad0672b7334927097"
+    },
+    {
+      "path": "kkc/workbenches/detail-workbench/engine/classic_workbench.jsx",
+      "bytes": 15016,
+      "sha256": "78b6fa827c3f3b279008b2378aa2608a016c1d8f2b322f35aa8fa703c399756a"
+    },
+    {
+      "path": "kkc/workbenches/detail-workbench/engine/editable_long_psd.jsx",
+      "bytes": 16654,
+      "sha256": "84000a58d585630ba4ce6203f8af9ed33d81fd100dca8e63239d0c0014efb2ca"
+    },
+    {
+      "path": "kkc/workbenches/detail-workbench/engine/manifest_workbench.jsx",
+      "bytes": 31747,
+      "sha256": "ab18b8bba1a2fb328f30673b491a934e284e4ab42570de717e222500f8d14f62"
+    },
+    {
+      "path": "kkc/workbenches/detail-workbench/engine/mixed_detail_fonts.jsx",
+      "bytes": 4310,
+      "sha256": "a19395f2cc0de2527170a6f0cc0f79fc80563e0c8c6090155c254129bc826d42"
+    },
+    {
+      "path": "kkc/workbenches/detail-workbench/engine/native_detail_template.jsx",
+      "bytes": 5372,
+      "sha256": "8b0919b46f7689c9392bb6a13e7782991573c4ddf4817b4223c802aef9e8dd42"
+    },
+    {
+      "path": "kkc/workbenches/detail-workbench/engine/prepare_template.jsx",
+      "bytes": 9882,
+      "sha256": "46880808b8648fbfbaccd9f28afecafa54e97efe94c66fd2a84b2aff8ffe943c"
+    },
+    {
+      "path": "kkc/workbenches/detail-workbench/engine/section_template.jsx",
+      "bytes": 27153,
+      "sha256": "32c55ccdc3b5a3cf0106befbed3a53d32a271633275ece381bebdaf8bd8a7ceb"
+    },
+    {
+      "path": "kkc/workbenches/detail-workbench/engine/template_classifier.jsx",
+      "bytes": 3142,
+      "sha256": "ea52eb4ce291ea989ee50cad2935647a0d7a411d97ee65c51255392271071f4d"
+    },
+    {
+      "path": "kkc/workbenches/detail-workbench/engine/template_manifest.jsx",
+      "bytes": 69868,
+      "sha256": "4e02a660fdcad8fa109b521a2226140cee9d351d1159ec7fbf09d4ade4d1b0b6"
+    },
+    {
+      "path": "kkc/workbenches/detail-workbench/engine/template_reference.jsx",
+      "bytes": 2122,
+      "sha256": "fbd029e24295ba5ee478af234fc3366774309d8723b9ecc6f41ee62c5a02a673"
+    },
+    {
+      "path": "kkc/workbenches/detail-workbench/engine/workbench.jsx",
+      "bytes": 23033,
+      "sha256": "1c1e0065c8673c812f79697fe86ea5cb04ff8009b71027c054cf480c2e181dd8"
+    },
+    {
+      "path": "kkc/workbenches/detail-workbench/feishu_auth.py",
+      "bytes": 17906,
+      "sha256": "1d171b125a33a23b46688269b8b43bd918cba604ec70026f209c393cb009133f"
+    },
+    {
+      "path": "kkc/workbenches/detail-workbench/feishu_import.py",
+      "bytes": 20230,
+      "sha256": "1823512acac91275cbf8524b70dc3ded80978e800277169f8dfac023b5987270"
+    },
+    {
+      "path": "kkc/workbenches/detail-workbench/feishu_offline.py",
+      "bytes": 7005,
+      "sha256": "4a29e8097af65b35cf9d6333ae02c33db9ab88b6518ac1bad3ad18ea1ae93d54"
+    },
+    {
+      "path": "kkc/workbenches/detail-workbench/fonts/cn.ttf",
+      "bytes": 7686396,
+      "sha256": "134d40dd3e3a9c620082f94ad273067c781b8decdf58b09b477e5fa9037d8656"
+    },
+    {
+      "path": "kkc/workbenches/detail-workbench/fonts/digit.ttf",
+      "bytes": 2637448,
+      "sha256": "3ae1443227e3b8df52bccf8e528e207a6190484cae397ec6f957a0a89e849b99"
+    },
+    {
+      "path": "kkc/workbenches/detail-workbench/fonts/latin.otf",
+      "bytes": 13700,
+      "sha256": "d1838404fd1622b2f69552ee95839679af662ae9c604ddb3ed1bbd1d86d867a1"
+    },
+    {
+      "path": "kkc/workbenches/detail-workbench/geometry.py",
+      "bytes": 20725,
+      "sha256": "f058330019a1517b7ea1eacb60e2085643e5ff5ac312ed72d0feaf2e6acf9b67"
+    },
+    {
+      "path": "kkc/workbenches/detail-workbench/install.cmd",
+      "bytes": 191,
+      "sha256": "834b8d4651c35317965a98d2c0ff2127d06a30fea91068aaf64ce1f4778ab0b2"
+    },
+    {
+      "path": "kkc/workbenches/detail-workbench/install.ps1",
+      "bytes": 12671,
+      "sha256": "6c89ebda5dce07d7c6765442aa0acd5329eb219e1c1d590ac370a85e5107ab16"
+    },
+    {
+      "path": "kkc/workbenches/detail-workbench/live_preview.py",
+      "bytes": 71339,
+      "sha256": "98d7f8cec3cf1c9253c9559724526658f7309904f323fb50b82bcaabdfe473a5"
+    },
+    {
+      "path": "kkc/workbenches/detail-workbench/package_io.py",
+      "bytes": 16512,
+      "sha256": "19359f6df0e10c962aef1fcfe83c19f01bdf9baab5cd7761d2d9d574297a6669"
+    },
+    {
+      "path": "kkc/workbenches/detail-workbench/product_data.example.json",
+      "bytes": 1389,
+      "sha256": "0a36ca306db7c49d996b8a064dcc17663c77127aff7022ed61175a1feff1dca0"
+    },
+    {
+      "path": "kkc/workbenches/detail-workbench/psd_reference.py",
+      "bytes": 8640,
+      "sha256": "0ea845f8c2c6c89b3392255d379208d676ff211e9b38049624b5ced6dbd54d1d"
+    },
+    {
+      "path": "kkc/workbenches/detail-workbench/README.md",
+      "bytes": 9903,
+      "sha256": "98f83bffcd77d4657473ece40317fa38015d1b356694fbbc22f3a99387c7673a"
+    },
+    {
+      "path": "kkc/workbenches/detail-workbench/refresh_session.py",
+      "bytes": 11227,
+      "sha256": "d0b3afda48465783bf44b2c5dba364dcd0784d9d56be4bb3b9ea76e7ac9eb296"
+    },
+    {
+      "path": "kkc/workbenches/detail-workbench/start.cmd",
+      "bytes": 841,
+      "sha256": "b7f950b02e9646e26551d15b3fae171a504245c7d6478c5a5e1a449577de267b"
+    },
+    {
+      "path": "kkc/workbenches/detail-workbench/templates.py",
+      "bytes": 40184,
+      "sha256": "80c9a42df9f466dbc84bd314786082e93e7d7dbe9372c6e937197b4a7558edb3"
+    },
+    {
+      "path": "kkc/workbenches/detail-workbench/upgrade_templates.py",
+      "bytes": 2380,
+      "sha256": "23ab184838304525d8fb8ce8a230d4f79ed749ac520fad07ccd4e505335ea188"
+    },
+    {
+      "path": "kkc/workbenches/detail-workbench/workbench.py",
+      "bytes": 31406,
+      "sha256": "2200cdfcfa421ca4a6a72602a0f3d1e06c6971ba23547c6f9fd5dd493ee255bf"
+    }
+  ]
+}
