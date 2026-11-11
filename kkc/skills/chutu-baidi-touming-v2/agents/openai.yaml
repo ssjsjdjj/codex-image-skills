@@ -1,0 +1,4 @@
+interface:
+  display_name: "出图-白底透明图 V2"
+  short_description: "生成白底透明图和分层PSD，增加边缘自检、有限修复与细节保护"
+  default_prompt: "使用 $chutu-baidi-touming-v2 处理指定素材，先检查边缘并展示预览，确认后生成白底图、透明图和分层PSD。"
