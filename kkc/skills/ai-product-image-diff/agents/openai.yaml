@@ -1,0 +1,4 @@
+interface:
+  display_name: "AI产品差异检测与点选修复"
+  short_description: "逐图逐人展示放大差异，用户点选后自动选法局部修复并展示修后复核"
+  default_prompt: "使用 $ai-product-image-diff 对比 AI 图与实拍，逐图逐人展示编号放大预览；我指定修改项后自动选择合适方法修复，并展示修前、修后及参考对比与复核结果。"
