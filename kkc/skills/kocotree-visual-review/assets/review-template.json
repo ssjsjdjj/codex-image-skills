@@ -1,0 +1,46 @@
+{
+  "template_only": true,
+  "schema_version": "1.0",
+  "project_id": "EXAMPLE",
+  "review_id": "EXAMPLE-initial-1.0",
+  "product_category": "EXAMPLE",
+  "product_name": "EXAMPLE",
+  "reviewed_at": "2026-10-20T10:00:00+08:00",
+  "stage": "initial",
+  "version": "1.0",
+  "artifact": {
+    "name": "EXAMPLE-visual.pdf",
+    "uri": "EXAMPLE-visual.pdf",
+    "sha256": null
+  },
+  "rubric_version": "kocotree-visual-1.0",
+  "evidence": [],
+  "scores": [
+    {"id": "first_screen", "max": 12, "status": "insufficient", "score": null, "reason": "待审查", "evidence_ids": []},
+    {"id": "product_visibility", "max": 14, "status": "insufficient", "score": null, "reason": "待审查", "evidence_ids": []},
+    {"id": "scene_credibility", "max": 10, "status": "insufficient", "score": null, "reason": "待审查", "evidence_ids": []},
+    {"id": "claim_clarity", "max": 13, "status": "insufficient", "score": null, "reason": "待审查", "evidence_ids": []},
+    {"id": "claim_proof", "max": 13, "status": "insufficient", "score": null, "reason": "待审查", "evidence_ids": []},
+    {"id": "readability", "max": 10, "status": "insufficient", "score": null, "reason": "待审查", "evidence_ids": []},
+    {"id": "visual_system", "max": 8, "status": "insufficient", "score": null, "reason": "待审查", "evidence_ids": []},
+    {"id": "page_flow", "max": 10, "status": "insufficient", "score": null, "reason": "待审查", "evidence_ids": []},
+    {"id": "style_fit", "max": 10, "status": "insufficient", "score": null, "reason": "待审查", "evidence_ids": []}
+  ],
+  "gates": [
+    {"id": "product_identifiable", "status": "pending", "blocking": true, "reason": "待审查", "evidence_ids": []},
+    {"id": "first_three_chain", "status": "pending", "blocking": true, "reason": "待审查", "evidence_ids": []},
+    {"id": "design_system", "status": "pending", "blocking": true, "reason": "待审查", "evidence_ids": []},
+    {"id": "claim_evidence", "status": "pending", "blocking": true, "reason": "待审查", "evidence_ids": []},
+    {"id": "asset_materials", "status": "pending", "blocking": false, "reason": "待审查", "evidence_ids": []},
+    {"id": "copy_facts", "status": "pending", "blocking": false, "reason": "待审查", "evidence_ids": []},
+    {"id": "brand_elements", "status": "pending", "blocking": false, "reason": "待审查", "evidence_ids": []},
+    {"id": "ai_artifacts", "status": "pending", "blocking": false, "reason": "待审查", "evidence_ids": []},
+    {"id": "platform_safe_area", "status": "pending", "blocking": false, "reason": "待审查", "evidence_ids": []}
+  ],
+  "findings": [],
+  "decision": {
+    "ai_recommendation": "insufficient_evidence",
+    "supervisor": {"status": "pending", "decision": null, "reason": null, "calibrated_score": null}
+  },
+  "package_status": "not_started"
+}
