@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "defaults": {
+    "fit": "cover",
+    "on_conflict": "error",
+    "allow_padding": false,
+    "allow_stretch": false,
+    "format": "keep",
+    "save_recipe": false,
+    "max_bytes": 500000
+  },
+  "preset_defaults": {},
+  "feedback": {
+    "mode": "per_batch",
+    "storage": "text_params_paths",
+    "repeat_threshold": 3,
+    "long_term_immediate": true
+  },
+  "versions": {
+    "keep": 3
+  },
+  "runtime": {
+    "rollback": "manual"
+  }
+}
