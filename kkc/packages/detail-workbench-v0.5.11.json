@@ -1,0 +1,10 @@
+{
+  "version": "0.5.11",
+  "templates": 5,
+  "filename": "DetailWorkbench-v0.5.11-Windows-5-templates.zip",
+  "bytes": 1240064514,
+  "sha256": "aedb451d4b613bc1731977519ea4ad18033350e5d17f45735cc71a992b3bfedb",
+  "download_url": "https://github.com/ssjsjdjj/codex-image-skills/releases/download/kkc-2026-11-11/DetailWorkbench-v0.5.11-Windows-5-templates.zip",
+  "release_url": "https://github.com/ssjsjdjj/codex-image-skills/releases/tag/kkc-2026-11-11",
+  "installation": "完整解压后运行一键安装.cmd，再运行启动工作台.cmd。需要 Windows、联网安装依赖及 Photoshop。"
+}
