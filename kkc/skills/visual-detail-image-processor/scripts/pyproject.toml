@@ -1,0 +1,11 @@
+[project]
+name = "visual-detail-template"
+version = "0.1.0"
+description = "Generate ecommerce detail-page modules from 2000px visual templates."
+requires-python = ">=3.10"
+dependencies = [
+    "Pillow>=10.0.0",
+]
+
+[tool.uv]
+package = false
