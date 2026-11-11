@@ -1,0 +1,4 @@
+interface:
+  display_name: "按文件名替换图片"
+  short_description: "按同名源图覆盖目标图片，自动备份并完成哈希校验，适合小图换大图流程。"
+  default_prompt: "Use $replace-images-by-name to replace selected small images with matching large originals by filename."
