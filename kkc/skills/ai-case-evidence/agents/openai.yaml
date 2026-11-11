@@ -1,0 +1,4 @@
+interface:
+  display_name: "AI案例取证"
+  short_description: "整理真实业务证据与人工复核，生成案例提交稿和固定八节的Codex使用报告"
+  default_prompt: "使用 $ai-case-evidence 整理本次真实任务的证据和案例提交稿，沿用已有日志与我主动提供的用时。"
