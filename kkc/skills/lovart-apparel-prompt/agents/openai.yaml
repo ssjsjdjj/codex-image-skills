@@ -1,0 +1,7 @@
+interface:
+  display_name: "Lovart服装模特图提示词"
+  short_description: "跨款式编写主提示词与局部返修词，重点保持衣服质感、Logo和模特身份"
+  default_prompt: "使用 $lovart-apparel-prompt，根据本次实拍和参考图生成主提示词与局部返修词，重点控制衣服质感、Logo和模特身份一致性。"
+
+policy:
+  allow_implicit_invocation: true
