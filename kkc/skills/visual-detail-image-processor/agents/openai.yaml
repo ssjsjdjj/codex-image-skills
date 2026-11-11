@@ -1,0 +1,7 @@
+interface:
+  display_name: "详情页分层换图"
+  short_description: "按款生成可编辑详情长图，保留商品智能对象和自适应表格"
+  default_prompt: "使用 $visual-detail-image-processor 套版生成可编辑详情长图，并按商品数据调整表格行列。"
+
+policy:
+  allow_implicit_invocation: true
