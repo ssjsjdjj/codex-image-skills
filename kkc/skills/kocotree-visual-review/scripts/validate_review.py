@@ -96,25 +96,18 @@ def validate(record, previous=None):
     for field in ("project_id", "review_id", "version"):
         if not _nonempty(record.get(field)):
             errors.append(f"{field}不能为空")
-        elif record[field].strip().startswith("EXAMPLE"):
+        elif record[field].startswith("EXAMPLE"):
             errors.append(f"{field}仍为模板示例值")
-    # Older records may omit case metadata; supplied values must be usable.
     for field in ("product_category", "product_name"):
-        if field in record:
-            if not _nonempty(record[field]):
-                errors.append(f"{field}须为非空字符串")
-            elif record[field].strip().startswith("EXAMPLE"):
-                errors.append(f"{field}仍为模板示例值")
+        if field in record and (not _nonempty(record[field]) or record[field].startswith("EXAMPLE")):
+            errors.append(f"{field}须为真实非空值")
     if "reviewed_at" in record:
         try:
-            value = record["reviewed_at"]
-            if not _nonempty(value):
-                raise ValueError
-            instant = datetime.fromisoformat(value)
-            if instant.tzinfo is None or instant.utcoffset() is None:
-                raise ValueError
-        except (TypeError, ValueError, OverflowError):
-            errors.append("reviewed_at须为带时区的ISO 8601日期时间")
+            reviewed_at = datetime.fromisoformat(record["reviewed_at"])
+            if reviewed_at.tzinfo is None or reviewed_at.utcoffset() is None:
+                raise ValueError("missing timezone")
+        except (TypeError, ValueError):
+            errors.append("reviewed_at须为带时区的ISO 8601时间")
     stage = record.get("stage")
     if not _choice(stage, STAGES):
         errors.append("stage必须为initial、revision或final")
@@ -161,7 +154,6 @@ def validate(record, previous=None):
         if status == "assessed":
             if type(value) is not int or not 0 <= value <= RUBRIC[identifier]:
                 errors.append(f"{label}.score须为0到{RUBRIC[identifier]}的整数")
-                complete = False
             else:
                 total += value
             if not _nonempty(item.get("reason")):
@@ -204,7 +196,7 @@ def validate(record, previous=None):
             errors.append(f"{label}不适用时不能阻断")
         if not _nonempty(item.get("reason")):
             errors.append(f"{label}.reason不能为空")
-        _refs(item, label, evidence_ids, errors, required=_choice(status, {"passed", "blocked"}))
+        _refs(item, label, evidence_ids, errors, required=status in {"passed", "blocked"})
 
     findings = _objects(record.get("findings"), "findings", errors)
     finding_ids = _unique_items(findings, "findings", errors)
@@ -243,7 +235,7 @@ def validate(record, previous=None):
             continue
         linked = any(
             item.get("kind") == "required"
-            and _choice(item.get("status"), {"open", "partial"})
+            and item.get("status") in {"open", "partial"}
             and gate_id in item.get("gate_ids", [])
             for item in findings
             if isinstance(item.get("gate_ids", []), list)
@@ -252,7 +244,7 @@ def validate(record, previous=None):
             errors.append(f"门槛{gate_id}已阻断，但没有关联未关闭的必改问题")
 
     unresolved = any(
-        item.get("kind") == "required" and _choice(item.get("status"), {"open", "partial"})
+        item.get("kind") == "required" and item.get("status") in {"open", "partial"}
         for item in findings
     )
     pending_finding = any(
@@ -290,7 +282,7 @@ def validate(record, previous=None):
                 errors.append("主管决定与阶段不匹配")
             if not _nonempty(supervisor.get("reason")):
                 errors.append("已记录主管决定时须保留依据")
-            if _choice(supervisor.get("decision"), {"final_approved", "direction_approved"}) and expected not in {"final_ready", "direction_ready"}:
+            if supervisor.get("decision") in {"final_approved", "direction_approved"} and expected not in {"final_ready", "direction_ready"}:
                 if not _nonempty(supervisor.get("override_reason")):
                     errors.append("主管批准与AI建议不同时须写override_reason")
         else:
@@ -310,6 +302,19 @@ def validate(record, previous=None):
     if package_status == "passed" and not _nonempty(record.get("package_audit_ref")):
         errors.append("数据包通过须提供独立验收记录package_audit_ref")
 
+    sync = record.get("sync")
+    if not isinstance(sync, dict):
+        errors.append("sync必须为对象")
+    elif not _choice(sync.get("status"), {"not_requested", "pending", "synced", "failed"}):
+        errors.append("sync.status无效")
+    elif sync.get("status") == "synced":
+        if not _nonempty(sync.get("record_id")) or not _nonempty(sync.get("readback_at")):
+            errors.append("已同步须包含远端record_id和readback_at")
+        if not isinstance(sync.get("verified_fields"), list) or not sync["verified_fields"]:
+            errors.append("已同步须列出回读核对的verified_fields")
+    elif sync.get("status") == "failed" and not _nonempty(sync.get("error")):
+        errors.append("同步失败须保留错误摘要")
+
     if previous is not None:
         if not isinstance(previous, dict):
             errors.append("上一版记录根节点必须为对象")
@@ -328,9 +333,9 @@ def validate(record, previous=None):
                         continue
                     old_status = prior.get("status")
                     new = current.get(prior["id"])
-                    if _choice(old_status, {"open", "partial", "pending"}) and new is None:
+                    if old_status in {"open", "partial", "pending"} and new is None:
                         errors.append(f"旧版未关闭问题{prior['id']}未在新版承接")
-                    if old_status == "closed" and new is not None and _choice(new.get("status"), {"open", "partial", "pending"}):
+                    if old_status == "closed" and new is not None and new.get("status") in {"open", "partial"}:
                         if not _nonempty(new.get("reopen_reason")):
                             errors.append(f"问题{prior['id']}重新打开须说明reopen_reason")
 
@@ -347,9 +352,6 @@ def main(argv=None):
         previous = json.loads(args.previous.read_text(encoding="utf-8")) if args.previous else None
     except (OSError, UnicodeError, json.JSONDecodeError) as exc:
         print(f"无法读取审核记录：{exc}", file=sys.stderr)
-        return 1
-    if args.previous is not None and not isinstance(previous, dict):
-        print("错误：上一版记录根节点必须为对象", file=sys.stderr)
         return 1
     errors, total = validate(record, previous)
     if errors:

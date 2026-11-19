@@ -104,7 +104,6 @@ def build_cases(source_dir, out_dir=None):
 
     cases = []
     skipped_projects = []
-    skipped_candidates = []
     for project_id, entries in sorted(projects.items()):
         missing = [
             path.name for record, path in entries
@@ -134,7 +133,6 @@ def build_cases(source_dir, out_dir=None):
 
         origins = {}
         active_cases = {}
-        awaiting_approval = {}
         for record, _ in entries:
             for finding in record["findings"]:
                 identifier = finding["id"]
@@ -142,11 +140,9 @@ def build_cases(source_dir, out_dir=None):
                 if status in UNRESOLVED:
                     origins.setdefault(identifier, (record, finding))
                     active_cases.pop(identifier, None)
-                    awaiting_approval.pop(identifier, None)
                 elif status == "dismissed":
                     origins.pop(identifier, None)
                     active_cases.pop(identifier, None)
-                    awaiting_approval.pop(identifier, None)
                 elif status == "closed":
                     origin = origins.get(identifier)
                     if origin is not None and _approved(record) and finding["kind"] == "required":
@@ -155,29 +151,14 @@ def build_cases(source_dir, out_dir=None):
                             origin[0], origin[1], record, finding,
                         )
                         origins.pop(identifier, None)
-                        awaiting_approval.pop(identifier, None)
                     elif origin is not None:
                         active_cases.pop(identifier, None)
-                        if finding["kind"] == "required":
-                            awaiting_approval[identifier] = {
-                                "project_id": project_id,
-                                "finding_id": identifier,
-                                "review_id": record["review_id"],
-                                "reason_code": "supervisor_unapproved",
-                                "reason": "问题已关闭，但该解决记录尚未获主管方向或终稿批准",
-                            }
-                        else:
-                            awaiting_approval.pop(identifier, None)
         cases.extend(active_cases.values())
-        skipped_candidates.extend(awaiting_approval[key] for key in sorted(awaiting_approval))
 
     if errors:
         raise ValueError("版本衔接校验失败，案例库未更新：\n" + "\n".join(errors))
     cases.sort(key=lambda case: (case["product_category"], case["dimension_id"] or "", case["case_id"]))
-    return {
-        "schema_version": "1.0", "cases": cases,
-        "skipped_projects": skipped_projects, "skipped_candidates": skipped_candidates,
-    }
+    return {"schema_version": "1.0", "cases": cases, "skipped_projects": skipped_projects}
 
 
 def render_reference(index):
@@ -201,11 +182,6 @@ def render_reference(index):
         lines.extend(["## 未入库项目", ""])
         for item in index["skipped_projects"]:
             lines.append(f"- {item['project_id']}：{item['reason']}（{', '.join(item['files'])}）。")
-        lines.append("")
-    if index.get("skipped_candidates"):
-        lines.extend(["## 待主管批准的已关闭问题", ""])
-        for item in index["skipped_candidates"]:
-            lines.append(f"- {item['project_id']} / {item['finding_id']} / {item['review_id']}：{item['reason']}。")
         lines.append("")
     return "\n".join(lines)
 
@@ -234,8 +210,7 @@ def main(argv=None):
     except (ValueError, OSError) as exc:
         print(f"错误：{exc}", file=sys.stderr)
         return 1
-    print(f"案例库已重建：{len(index['cases'])}例，跳过{len(index['skipped_projects'])}个元数据不完整的项目，"
-          f"{len(index['skipped_candidates'])}个已关闭问题待主管批准；{args.out_dir}")
+    print(f"案例库已重建：{len(index['cases'])}例，跳过{len(index['skipped_projects'])}个元数据不完整的项目；{args.out_dir}")
     return 0
 
 

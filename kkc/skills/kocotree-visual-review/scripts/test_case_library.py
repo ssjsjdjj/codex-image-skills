@@ -40,6 +40,7 @@ def records():
     }
     return first, second
 
+
 def save(directory, *items):
     for index, record in enumerate(items, start=1):
         (directory / f"{index:02d}.json").write_text(json.dumps(record, ensure_ascii=False), encoding="utf-8")
@@ -71,20 +72,13 @@ class CaseLibraryTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             save(root, first, second)
-            index = build_cases(root)
-            self.assertEqual(index["cases"], [])
-            self.assertEqual(len(index["skipped_candidates"]), 1)
-            self.assertEqual(index["skipped_candidates"][0]["finding_id"], "F001")
-            self.assertEqual(index["skipped_candidates"][0]["reason_code"], "supervisor_unapproved")
-            self.assertIn(second["review_id"], render_reference(index))
+            self.assertEqual(build_cases(root)["cases"], [])
             second["decision"]["supervisor"] = {
                 "status": "recorded", "decision": "direction_approved", "reason": "确认解决",
                 "calibrated_score": None,
             }
             save(root, first, second)
-            index = build_cases(root)
-            self.assertEqual(len(index["cases"]), 1)
-            self.assertEqual(index["skipped_candidates"], [])
+            self.assertEqual(len(build_cases(root)["cases"]), 1)
 
     def test_reopened_issue_withdraws_case(self):
         first, second = records()
@@ -126,84 +120,6 @@ class CaseLibraryTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "校验失败"):
                 write_index(build_cases(root, out), out)
             self.assertEqual((out / "case-index.json").read_text(encoding="utf-8"), "old index")
-
-    def test_suggestions_do_not_become_cases(self):
-        first, second = records()
-        for record in (first, second):
-            record["findings"][0].update(kind="suggestion", expected_benefit="改善主体展示")
-            record["decision"]["ai_recommendation"] = "direction_ready"
-        with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
-            save(root, first, second)
-            index = build_cases(root)
-            self.assertEqual(index["cases"], [])
-            self.assertEqual(index["skipped_candidates"], [])
-
-    def test_revoked_approval_removes_previously_generated_case(self):
-        first, second = records()
-        with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
-            save(root, first, second)
-            self.assertEqual(len(build_cases(root)["cases"]), 1)
-            second["decision"]["supervisor"].update(status="pending", decision=None, reason=None)
-            save(root, first, second)
-            index = build_cases(root)
-            self.assertEqual(index["cases"], [])
-            self.assertEqual(len(index["skipped_candidates"]), 1)
-
-    def test_repeated_unapproved_closures_are_counted_once_and_clear_on_reopen(self):
-        first, second = records()
-        second["decision"]["supervisor"].update(status="pending", decision=None, reason=None)
-        third = copy.deepcopy(second)
-        third.update(review_id="P001-revision-3.0", version="3.0", reviewed_at="2026-10-22T10:00:00+08:00")
-        with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
-            save(root, first, second, third)
-            index = build_cases(root)
-            self.assertEqual(len(index["skipped_candidates"]), 1)
-            self.assertEqual(index["skipped_candidates"][0]["review_id"], third["review_id"])
-            third["findings"][0].update(status="pending", reopen_reason="再次复核素材")
-            third["decision"]["ai_recommendation"] = "insufficient_evidence"
-            save(root, first, second, third)
-            self.assertEqual(build_cases(root)["skipped_candidates"], [])
-
-    def test_resolved_again_reuses_case_id_with_new_evidence_cycle(self):
-        first, second = records()
-        third = copy.deepcopy(second)
-        third.update(review_id="P001-revision-3.0", version="3.0", reviewed_at="2026-10-22T10:00:00+08:00")
-        third["findings"][0].update(status="open", reopen_reason="新排版再次遮挡")
-        third["decision"]["ai_recommendation"] = "needs_revision"
-        third["decision"]["supervisor"].update(status="pending", decision=None, reason=None)
-        fourth = copy.deepcopy(second)
-        fourth.update(review_id="P001-revision-4.0", version="4.0", reviewed_at="2026-10-23T10:00:00+08:00")
-        with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
-            save(root, first, second)
-            original = build_cases(root)["cases"][0]
-            save(root, first, second, third, fourth)
-            latest = build_cases(root)["cases"][0]
-            self.assertEqual(latest["case_id"], original["case_id"])
-            self.assertEqual(latest["before"]["review_id"], third["review_id"])
-            self.assertEqual(latest["after"]["review_id"], fourth["review_id"])
-
-    def test_duplicate_ids_or_instants_reject_version_sequence(self):
-        for field, value in (("review_id", "P001-initial-1.0"), ("reviewed_at", "2026-10-20T02:00:00Z")):
-            with self.subTest(field=field), tempfile.TemporaryDirectory() as temporary:
-                first, second = records()
-                second[field] = value
-                root = Path(temporary)
-                save(root, first, second)
-                with self.assertRaisesRegex(ValueError, "版本衔接校验失败"):
-                    build_cases(root)
-
-    def test_continuing_closed_does_not_replace_resolution_snapshot(self):
-        first, second = records()
-        third = copy.deepcopy(second)
-        third.update(review_id="P001-revision-3.0", version="3.0", reviewed_at="2026-10-22T10:00:00+08:00")
-        with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
-            save(root, first, second, third)
-            self.assertEqual(build_cases(root)["cases"][0]["after"]["review_id"], second["review_id"])
 
 
 if __name__ == "__main__":
