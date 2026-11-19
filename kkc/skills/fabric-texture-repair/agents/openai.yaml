@@ -1,0 +1,4 @@
+interface:
+  display_name: "面料质感检查与修复"
+  short_description: "对照实拍首轮直接做细腻修复，检查整件与保护区，交付原尺寸PNG及可编辑PSD"
+  default_prompt: "使用 $fabric-texture-repair 对照实拍检查全部同面料可见区域，在已授权范围内首轮直接按细腻修改版标准修复，保留原图光影、结构和保护区，验收后交付原尺寸PNG与可编辑PSD。"
