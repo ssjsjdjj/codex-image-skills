@@ -343,8 +343,8 @@
     },
     {
       "path": "kkc/packages/detail-workbench-安装说明.md",
-      "bytes": 1058,
-      "sha256": "67ddff2bd86536e8b5eb46b23f2c8a31bb5d2660324a24e4fe153fc6880c0b64"
+      "bytes": 3043,
+      "sha256": "cc81cfa1290157d584895dab453d0e22ab0c3ac6457a9f5adfecbee488d3f476"
     },
     {
       "path": "kkc/packages/DetailWorkbench-v0.5.11-Windows-5-templates.zip.sha256",
@@ -1691,5 +1691,6 @@
       "bytes": 30859,
       "sha256": "f142b61f31c164d680297cec21ec7be98bfa5e3b6adab140bd52d7bac06f8781"
     }
-  ]
+  ],
+  "installation_note": "2026-11-19补正完整五母版迁移说明，区分Release完整包、仓库源码ZIP及无母版程序包。"
 }
