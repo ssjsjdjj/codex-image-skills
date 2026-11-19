@@ -16,6 +16,7 @@ from PIL import Image, ImageOps
 
 from templates import ROOT, TEMPLATE, TEMPLATE_LABEL, TEMPLATE_SIZE, default_template
 from geometry import MAX_COLORS, normalize_view, plan_layout, resolve_crop, resolve_text_layout
+from table_data import cell_text, normalize_table, quick_table, fit_table, resolve_tables
 
 TABLE_NAMES = ("03选尺码", "05尺码快选", "试穿报告")
 FIELDS = {"名称": 28, "货号": 40, "尺码": 28, "材质": 140}
@@ -25,7 +26,7 @@ EXTRA_IMAGE_LABELS = {"hero": "主视觉", "brand": "品牌场景", "measurement
 SCENE_FRAMES = ((768, 1081), (601, 788), (768, 1010), (768, 1010))
 LEGACY_VIEW_WARNING = "已忽略旧手动取景，按图框自动居中填满"
 ENGINE_FILES = ("mixed_detail_fonts.jsx", "native_detail_template.jsx", "adaptive_detail_tables.jsx",
-                "editable_long_psd.jsx", "classic_workbench.jsx", "template_manifest.jsx",
+                "editable_long_psd.jsx", "classic_workbench.jsx", "template_manifest.jsx", "compact_template.jsx",
                 "manifest_workbench.jsx", "workbench.jsx")
 
 
@@ -34,17 +35,6 @@ def read_data(path):
     if not isinstance(data, dict) or not isinstance(data.get("info"), dict):
         raise ValueError("商品资料应包含 info、colors、size_table 和 quick_size。")
     return data
-
-
-def cell_text(cell):
-    if cell is None:
-        return ""
-    if type(cell) not in (str, int, float) or (isinstance(cell, float) and not math.isfinite(cell)):
-        raise ValueError("单元格只接受文字、有限数值和空值。")
-    value = str(cell).strip()
-    if any(ord(char) < 32 for char in value):
-        raise ValueError("单元格内容请保持单行。")
-    return value
 
 
 def normalize_size_note(value):
@@ -86,52 +76,6 @@ def resolve_product_attributes(profile, values):
     return {"版型": attributes["fit"]["default_value"],
             **{name: binding["text"] for name, binding in attributes["fields"].items()},
             **values}
-
-
-def normalize_table(headers, rows):
-    if not isinstance(headers, list) or len(headers) < 2 or not isinstance(rows, list) or not rows:
-        raise ValueError("需要至少两列及一行有效数据。")
-    headers = [cell_text(cell) for cell in headers]
-    if not all(headers):
-        raise ValueError("表头存在空列。")
-    matrix = [headers]
-    for index, row in enumerate(rows, 1):
-        if not isinstance(row, list) or len(row) != len(headers):
-            raise ValueError(f"第 {index} 行列数与表头不一致。")
-        row = [cell_text(cell) for cell in row]
-        if not row[0] or not any(row[1:]):
-            raise ValueError(f"第 {index} 行缺少行标题或有效数据。")
-        matrix.append(row)
-    return matrix
-
-
-def quick_table(quick):
-    if not isinstance(quick, dict):
-        raise ValueError("需要包含身高、体重区间与推荐数据的对象。")
-    columns, labels, rows = (quick[key] for key in ("columns", "rows", "data"))
-    if not all(isinstance(value, list) for value in (columns, labels, rows)) or len(labels) != len(rows):
-        raise ValueError("身高区间与推荐行数不一致。")
-    if not all(isinstance(row, list) for row in rows):
-        raise ValueError("快选数据需要二维数组。")
-    return normalize_table([quick.get("axis_label", "身高/体重"), *columns],
-                           [[label, *row] for label, row in zip(labels, rows)])
-
-
-def fit_table(trial):
-    if not isinstance(trial, dict):
-        raise ValueError("需要包含 headers 与 rows 的对象。")
-    matrix = normalize_table(trial["headers"], trial["rows"])
-    if matrix[0] != ["姓名", "性别", "身高", "体重", "试穿尺码", "胸围/腰围/臀围"]:
-        return matrix
-    rows = []
-    for label, gender, height, weight, result, measurements in matrix[1:]:
-        parts = measurements.split("/") if measurements else ["", "", ""]
-        if len(parts) != 3:
-            raise ValueError("胸围/腰围/臀围应为三个以 / 分隔的值。")
-        match = re.fullmatch(r"(\d+)(?:码)?\s*(.*)", result)
-        size, feedback = match.groups() if match else (result, "")
-        rows.append([f"{label}（{gender}）" if gender else label, height, weight, *parts, size, feedback])
-    return [["用户试穿", "身高", "体重", "胸围", "腰围", "臀围", "试穿码数", "试穿反馈"], *rows]
 
 
 def image_entry(value, label, product=False):
@@ -194,7 +138,7 @@ def resolve_hidden_decorations(profile, requested, warnings):
     return selected
 
 
-def preflight(data, products, scenes, template=None, *, views=None, extra_images=None):
+def preflight(data, products, scenes, template=None, *, views=None, extra_images=None, table_issues=None):
     errors, warnings = [], []
     if views:
         warnings.append(LEGACY_VIEW_WARNING)
@@ -218,30 +162,18 @@ def preflight(data, products, scenes, template=None, *, views=None, extra_images
     if code and not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]*", code):
         errors.append("货号只支持字母、数字、下划线和短横线。")
 
-    readers = (
-        lambda: normalize_table(data["size_table"]["headers"], data["size_table"]["rows"]),
-        lambda: quick_table(data["quick_size"]),
-        lambda: fit_table(data["try_on"]),
-    )
-    available_tables = None
+    job["tables"], job["table_issues"] = resolve_tables(data, profile)
+    job["runtime_table_issues"] = dict(table_issues or {})
+    job["table_issues"].update(job["runtime_table_issues"])
     if profile:
         modules = profile.get("modules", [])
         modules = modules.values() if isinstance(modules, dict) else modules
-        available_tables = {module["table"]["key"] for module in modules if module.get("table")}
-    for title, reader in zip(TABLE_NAMES, readers):
-        if available_tables is not None and title not in available_tables:
-            payload = data.get({"03选尺码": "size_table", "05尺码快选": "quick_size", "试穿报告": "try_on"}[title])
-            if isinstance(payload, dict) and any(payload.get(key) for key in ("headers", "columns", "rows", "data")):
-                warnings.append(f"当前母版没有{title}模块，本次不输出该表，数据保留在资料包中。")
-            continue
-        trial = data.get("try_on")
-        if title == "试穿报告" and (trial is None or (isinstance(trial, dict) and trial.get("rows") == [])):
-            warnings.append("未提供试穿数据，将收起母版中的试穿报告模块。")
-            continue
-        try:
-            job["tables"][title] = reader()
-        except (KeyError, TypeError, ValueError) as error:
-            errors.append(f"{title} · {error}")
+        available = {m["table"]["key"] for m in modules if m.get("table")}
+        for title in TABLE_NAMES:
+            if title not in available:
+                payload = data.get({"03选尺码":"size_table", "05尺码快选":"quick_size", "试穿报告":"try_on"}[title])
+                if isinstance(payload, dict) and any(payload.get(k) for k in ("headers","columns","rows","data")):
+                    warnings.append(f"当前母版没有{title}模块，数据保留在资料包中。")
 
     colors = data.get("colors")
     if not isinstance(colors, list) or not 1 <= len(colors) <= MAX_COLORS or any(
@@ -306,7 +238,8 @@ def preflight(data, products, scenes, template=None, *, views=None, extra_images
             warnings.append("未启用模特展示，主视觉使用第一色商品图完整展示。")
     # Model slots never implicitly change an independently chosen hero.
     job["hero"] = job["products"][0] if job["products"] else None
-    job["brand"] = job["scenes"][0] if job["scenes"] else None
+    job["brand"] = (job["scenes"][0] if job["scenes"] and
+                    (not profile or "brand" in profile.get("view_slots", {})) else None)
     job["measurement"] = None
     for key, label in EXTRA_IMAGE_LABELS.items():
         if extras.get(key):
@@ -329,7 +262,10 @@ def preflight(data, products, scenes, template=None, *, views=None, extra_images
             try:
                 job["geometry"] = plan_layout(profile, len(job["products"]), job["tables"], len(job["scenes"]),
                                                has_hero=bool(job["hero"]), has_brand=bool(job["brand"]),
-                                               size_note=job["size_note"])
+                                               size_note=job["size_note"], table_issues=job["table_issues"])
+                job["table_status"] = job["geometry"]["table_status"]
+                warnings.extend(f"{key}已跳过 · {state['reason']}" for key, state in job["table_status"].items()
+                                if state["state"] == "skipped")
                 job["views"] = resolve_job_views(job, views or {}, warnings)
                 job["text_layout"] = resolve_text_layout(profile, job["geometry"], job["info"],
                                                         [item["label"] for item in job["products"]])
@@ -339,6 +275,20 @@ def preflight(data, products, scenes, template=None, *, views=None, extra_images
     if isinstance(source_warnings, list):
         warnings.extend(f"资料备注 · {warning}" for warning in source_warnings if isinstance(warning, str))
     return job, errors, warnings
+
+
+def replan_job_tables(job, issues):
+    """Use the same omission decision for a native retry and its UI preview."""
+    result = {**job, "table_issues": {**job.get("table_issues", {}), **issues},
+              "runtime_table_issues": {**job.get("runtime_table_issues", {}), **issues}}
+    result["geometry"] = plan_layout(result["profile"], len(result["products"]), result["tables"],
+        len(result["scenes"]), has_hero=bool(result.get("hero")), has_brand=bool(result.get("brand")),
+        size_note=result.get("size_note"), table_issues=result["table_issues"])
+    result["table_status"] = result["geometry"]["table_status"]
+    result["views"] = resolve_job_views(result, {}, [])
+    result["text_layout"] = resolve_text_layout(result["profile"], result["geometry"], result["info"],
+        [item["label"] for item in result["products"]])
+    return result
 
 
 def resolve_job_views(job, states, warnings):
@@ -573,19 +523,31 @@ def export_detail(job, output_root, source_data="", notify=lambda message: None)
         preview = delivery / f"{code}_详情预览.jpg"
         completed = folder / "photoshop-complete.txt"
         layout_verification = folder / "size-layout-verification.json"
-        payload = {**job, "products": products, "scenes": scenes, **extras, "template": str(template),
-                   "output": str(psb), "preview": str(preview), "completed": str(completed),
-                   "layout_verification": str(layout_verification)}
         scripts = [(ROOT / "engine" / name).read_text(encoding="utf-8-sig") for name in ENGINE_FILES]
-        args = json.dumps(payload, ensure_ascii=True, allow_nan=False)
         script = folder / "build.jsx"
-        script.write_text("\n\n".join(scripts) + f"\nrunDetailWorkbench({args});\n", encoding="utf-8-sig")
-        notify("Photoshop 正在套版、保存 PSB 并重开核验…")
-        try:
-            run_photoshop(script)
-        except RuntimeError:
-            if not completed.is_file():
-                raise
+        for attempt in range(len(TABLE_NAMES) + 1):
+            for partial in (completed, layout_verification, psb, preview):
+                partial.unlink(missing_ok=True)
+            payload = {**job, "products": products, "scenes": scenes, **extras, "template": str(template),
+                       "output": str(psb), "preview": str(preview), "completed": str(completed),
+                       "layout_verification": str(layout_verification)}
+            args = json.dumps(payload, ensure_ascii=True, allow_nan=False)
+            script.write_text("\n\n".join(scripts) + f"\nrunDetailWorkbench({args});\n", encoding="utf-8-sig")
+            notify("Photoshop 正在套版、保存 PSB 并重开核验…")
+            try:
+                run_photoshop(script)
+            except RuntimeError as error:
+                if not completed.is_file():
+                    match = re.search(r"\[TABLE_LAYOUT:([^\]]+)\]\s*([^\r\n]*)", str(error))
+                    key = match.group(1) if match else None
+                    if (key not in TABLE_NAMES or attempt == len(TABLE_NAMES) or
+                        job.get("geometry", {}).get("table_status", {}).get(key, {}).get("state") != "render"):
+                        raise
+                    reason = match.group(2).strip() or "Photoshop 实际表格排版超出可读范围。"
+                    job = replan_job_tables(job, {key: reason})
+                    notify(f"{key}已跳过 · 正在按与预览相同的布局重新生成…")
+                    continue
+            break
         if not completed.is_file():
             raise ValueError("Photoshop 未完成重开核验。")
         dimensions = psb_size(psb)

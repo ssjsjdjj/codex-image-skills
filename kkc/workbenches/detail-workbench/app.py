@@ -20,9 +20,10 @@ from live_preview import PreviewPane
 from package_io import (PackageError, PackageSelectionRequired, load_package, save_package,
                         source_stamp)
 from templates import UnsupportedTemplateError, import_template, list_templates, remove_template
+from table_data import delete_table_column, normalize_editor_matrix, parse_table_text, table_editor_matrix
 from workbench import (EXTRA_IMAGE_LABELS, FIELDS, PRODUCT_ATTRIBUTE_FIELDS, ROOT, TABLE_NAMES, export_detail,
                        fit_table, image_entry, normalize_product_attributes, normalize_size_note, normalize_table,
-                       preflight, quick_table, read_data, resolve_product_attributes)
+                       preflight, quick_table, read_data, resolve_product_attributes, resolve_tables)
 
 BG = "#edf3ef"
 PAPER = "#ffffff"
@@ -34,7 +35,7 @@ FONT = "Microsoft YaHei UI"
 IMAGE_FILTER = [("图片", "*.png *.jpg *.jpeg")]
 DEMO = ROOT.parent / "work/KQ26169-psd/product_data.json"
 PACKAGE_CACHE = ROOT.parent / "work/detail-workbench-packages"
-APP_VERSION = "0.5.11"
+APP_VERSION = "0.5.13"
 
 
 def program_stamp():
@@ -519,7 +520,7 @@ class Workbench:
                 return
             self.cell_editor = None
             self.finish_cell = None
-            value = entry.get().strip()
+            value = entry.get()
             entry.destroy()
             if save and value != self.tables[name][row_index][index]:
                 self.tables[name][row_index][index] = value
@@ -558,8 +559,13 @@ class Workbench:
         area = ttk.Frame(dialog, padding=14)
         area.pack(fill="both", expand=True)
         self.preview.focus_section("sizes")
-        ttk.Label(area, text="从表格复制后直接粘贴，第一行是表头，列之间用 Tab 分隔。",
+        ttk.Label(area, text="第一行是表头，列之间用 Tab 分隔；要删列，请选择列后点「删除整列」。",
                   style="Muted.TLabel").pack(anchor="w", pady=(0, 8))
+        toolbar = ttk.Frame(area)
+        toolbar.pack(fill="x", pady=(0, 8))
+        ttk.Label(toolbar, text="选择列").pack(side="left")
+        column_choice = ttk.Combobox(toolbar, state="readonly", width=25)
+        column_choice.pack(side="left", padx=(8, 7))
         grid = ttk.Frame(area)
         grid.pack(fill="both", expand=True)
         grid.rowconfigure(0, weight=1)
@@ -573,17 +579,60 @@ class Workbench:
         xbar.grid(row=1, column=0, sticky="ew")
         default_headers = (("尺码", "衣长", "胸围"), ("身高/体重", "15-20", "20-25"),
                            ("用户试穿", "身高", "体重", "胸围", "腰围", "臀围", "试穿码数", "试穿反馈"))
-        editor.insert("1.0", "\n".join("\t".join(row) for row in self.tables.get(name, [default_headers[index]])))
+        initial_matrix = self.tables.get(name) or table_editor_matrix(self.data, name) or [default_headers[index]]
+        editor.insert("1.0", "\n".join("\t".join(row) for row in initial_matrix))
+        editor.edit_reset()
+        status = ttk.Label(area, text="", style="Muted.TLabel")
+        status.pack(anchor="w", pady=(5, 0))
+
+        def refresh_columns(_=None):
+            if _ is not None and not editor.edit_modified():
+                return
+            selected = column_choice.current()
+            lines = parse_table_text(editor.get("1.0", "end-1c"))
+            headers = lines[0] if lines else []
+            column_choice.configure(values=[f"第 {i + 1} 列 · {value or '未命名'}" for i, value in enumerate(headers)])
+            if headers:
+                column_choice.current(min(max(selected, 1 if index == 1 and len(headers) > 1 else 0), len(headers) - 1))
+            else:
+                column_choice.set("")
+            status.configure(text=f"当前 {len(headers)} 列 · {max(0, len(lines) - 1)} 行数据；删除整列会同步删除表头和每行对应单元格。")
+            editor.edit_modified(False)
+
+        def remove_column():
+            try:
+                matrix = delete_table_column(parse_table_text(editor.get("1.0", "end-1c")),
+                                             column_choice.current(), quick=index == 1)
+            except ValueError as error:
+                messagebox.showerror("无法删除此列", str(error), parent=dialog)
+                return
+            editor.edit_separator()
+            editor.configure(autoseparators=False)
+            editor.delete("1.0", "end")
+            editor.insert("1.0", "\n".join("\t".join(row) for row in matrix))
+            editor.edit_separator()
+            editor.configure(autoseparators=True)
+            refresh_columns()
+
+        def undo():
+            try:
+                editor.edit_undo()
+            except tk.TclError:
+                return
+            refresh_columns()
+
+        ttk.Button(toolbar, text="删除整列", command=remove_column).pack(side="left")
+        ttk.Button(toolbar, text="撤销", command=undo).pack(side="left", padx=(7, 0))
+        editor.bind("<<Modified>>", refresh_columns)
+        refresh_columns()
 
         def save():
-            lines = [line.split("\t") for line in editor.get("1.0", "end-1c").splitlines() if line.strip()]
+            lines = parse_table_text(editor.get("1.0", "end-1c"))
             if not lines and index == 2:
                 self.tables.pop(name, None)
             else:
                 try:
-                    matrix = fit_table({"headers": lines[0], "rows": lines[1:]}) if index == 2 else normalize_table(lines[0], lines[1:])
-                    if index == 1:
-                        matrix[0][0] = "身高/体重"
+                    matrix = fit_table({"headers": lines[0], "rows": lines[1:]}) if index == 2 else normalize_editor_matrix(lines, quick=index == 1)
                     self.tables[name] = matrix
                 except (IndexError, ValueError) as error:
                     messagebox.showerror("表格格式有误", str(error) if lines else "需要表头及数据。", parent=dialog)
@@ -658,6 +707,7 @@ class Workbench:
 
     def invalidate(self):
         self.validation_revision += 1
+        self.native_table_issues = {}
         self.job = None
         self.toggle_export()
         if self.result:
@@ -704,7 +754,7 @@ class Workbench:
         extra = dict(self.extra_images)
         def worker():
             try:
-                result = preflight(data, products, scenes, template=template, views=views, extra_images=extra)
+                result = preflight(data, products, scenes, template=template, views=views, extra_images=extra, table_issues=dict(getattr(self, "native_table_issues", {})))
                 self.events.put(("validation", (revision, result, None)))
             except Exception as error:
                 self.events.put(("validation", (revision, None, str(error))))
@@ -769,17 +819,21 @@ class Workbench:
             size_note = normalize_size_note(self.size_note)
         except ValueError:
             size_note = None
+        tables, table_issues = resolve_tables(self.current_data(), profile)
+        table_issues.update(getattr(self, "native_table_issues", {}))
+        working_reference = template.working_preview_info() if template else {}
         self.preview.render(
             {**{key: value.get() for key, value in self.fields.items()}, "尺码备注": size_note,
              "STEP1 属性": self.data.get("product_attributes")}, colors, self.products, self.scenes,
-            self.tables, template.label if template else "待上传母版", template_image=getattr(template, "preview", None),
+            tables, template.label if template else "待上传母版", template_image=getattr(template, "preview", None),
             footer_image=getattr(template, "footer_preview", None),
             layout=getattr(template, "layout", "workbench"),
             template_profile=profile,
-            template_full_image=getattr(template, "original_preview", None),
-            template_original_info=template.original_preview_info() if template else None,
+            template_full_image=working_reference.get("preview"),
+            template_original_info=working_reference,
             views={}, extra_images=self.extra_images,
             hidden_decorations=self.hidden_decorations.get(template.id, []) if template else [],
+            table_issues=table_issues,
         )
 
     def handoff_feishu(self):
@@ -917,8 +971,7 @@ class Workbench:
             return "尚无母版 · 请上传本地 PSD / PSB"
         width, height = self.template.dimensions
         summary = f"{self.template.label}\n{width} × {height:,} px"
-        if self.template.source_dimensions != self.template.dimensions:
-            summary += "\n已整理为套版母版，完整原稿见右侧母版版式"
+        summary += "\n精简母版 · 仅保留必要页面"
         return summary
 
     def choose_template(self, _=None):
@@ -932,7 +985,7 @@ class Workbench:
                 profile = self.template.profile()
             except TemplateUpgradeRequired:
                 selected = self.template
-                self.start_task(lambda: upgrade_template(selected), "正在为该母版准备图位和整页预览…",
+                self.start_task(lambda: upgrade_template(selected), "正在整理必要页面并更新母版预览…",
                                 self.receive_template_upgrade, "母版升级未完成")
                 return
             self.apply_template_capabilities(profile)
@@ -954,16 +1007,9 @@ class Workbench:
     def repair_template_reference(self):
         if self.busy or self.template is None:
             return
-        from templates import repair_original_preview
+        from templates import repair_working_preview
 
         template = self.template
-        source = Path(template.source)
-        if not source.is_file():
-            selected = filedialog.askopenfilename(title="选择该母版的原始 PSD / PSB",
-                                                  filetypes=[("Photoshop 母版", "*.psd *.psb")])
-            if not selected:
-                return
-            source = Path(selected)
         def done(info):
             self.templates = list_templates()
             self.template = next((item for item in self.templates if item.id == template.id), template)
@@ -971,9 +1017,9 @@ class Workbench:
             self.template_combo.current(self.templates.index(self.template))
             self.sync_preview()
             self.preview.show_original()
-            self.status.set("母版完整参考图已重新读取" if info.get("status") == "ready" else info.get("message", "原稿未能读取"))
-        self.start_task(lambda: repair_original_preview(template, source=source),
-                        "正在读取母版原稿完整画面…", done, "母版原稿读取失败")
+            self.status.set("精简母版版式已更新" if info.get("status") == "ready" else info.get("message", "母版预览未能读取"))
+        self.start_task(lambda: repair_working_preview(template),
+                        "正在读取精简母版版式…", done, "精简母版预览读取失败")
 
     def import_data(self):
         if self.busy:
@@ -1663,17 +1709,20 @@ class Workbench:
         self.job = None
         self.tabs.select(self.review)
         self.review_text("正在核对表格、图片和母版，请稍候。")
-        self.start_task(lambda: preflight(data, products, scenes, template=template, views=views, extra_images=extra_images),
+        self.start_task(lambda: preflight(data, products, scenes, template=template, views=views, extra_images=extra_images, table_issues=dict(getattr(self, "native_table_issues", {}))),
                         "正在预检表格和素材…", lambda result: self.receive_check(result, generate=generate), "预检未完成")
 
     def receive_check(self, result, *, generate=False, quiet=False):
         job, errors, warnings = result
         self.job = None if errors else job
+        skipped = {key: state for key, state in job.get("table_status", {}).items() if state["state"] == "skipped"}
         report = [f"当前母版 · {self.template.label}", f"资料来源 · {self.source}", ""]
         if errors:
             report += ["待处理", *[f"  •  {error}" for error in errors], ""]
         else:
             report += [f"通过 · {job['info']['货号']}  {job['info']['名称']}", ""]
+        if skipped:
+            report += ["问题表已跳过，原资料保留", *[f"  •  {key}：{state['reason']}" for key, state in skipped.items()], ""]
         report.extend(f"{name}   {len(matrix) - 1} 行 × {len(matrix[0])} 列" for name, matrix in job["tables"].items())
         report += ["", "素材对应关系"]
         report.extend(f"{item['label']}  ←  {item['source']}" for item in job["products"] + job["scenes"])
@@ -1690,6 +1739,7 @@ class Workbench:
         if not quiet:
             self.tabs.select(self.review)
         self.status.set(f"发现 {len(errors)} 项待处理，可在「检查结果」查看" if errors else (
+            f"可生成 · 已跳过 {len(skipped)} 张问题表，其余内容正常" if skipped else
             f"资料检查通过 · {len(warnings)} 项提示，可在「检查结果」查看" if warnings else "资料检查通过，可以生成"))
         if generate and not errors:
             job, output, source = self.job, self.output.get(), self.source
@@ -1810,9 +1860,17 @@ class Workbench:
 
     def display_result(self, result):
         self.result = result
+        skipped = 0
+        try:
+            record = json.loads((result[0] / "素材与套版记录.json").read_text(encoding="utf-8"))
+            self.native_table_issues = record.get("runtime_table_issues", {})
+            skipped = sum(state["state"] == "skipped" for state in record.get("table_status", {}).values())
+        except (OSError, ValueError, TypeError):
+            self.native_table_issues = {}
+        self.sync_preview()
         self.result_button.configure(text="打开成品文件夹")
         self.result_button.state(["!disabled"])
-        self.status.set("PSB 已生成 · Photoshop 重开核验通过")
+        self.status.set("PSB 已生成 · " + (f"{skipped} 张问题表已跳过 · " if skipped else "") + "Photoshop 重开核验通过")
         self.preview.set_result(result[2])
 
     def open_result(self, index):

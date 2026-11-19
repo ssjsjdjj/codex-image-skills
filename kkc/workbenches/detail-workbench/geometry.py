@@ -9,6 +9,8 @@ from pathlib import Path
 from PIL import ImageFont
 
 TABLE_ROLES = {"03选尺码": "size_table", "05尺码快选": "quick_size", "试穿报告": "try_on"}
+COMPACT_ROLES = {"header", "hero", "product", "colors", *TABLE_ROLES.values(),
+                 "measurement_method", "scenes"}
 MAX_COLORS = 8
 MIN_ZOOM = .1
 MAX_ZOOM = 8.
@@ -171,13 +173,17 @@ def resolve_text_layout(profile, geometry, info, colors):
 
 def plan_table(matrix, width, height, style=None):
     """Plan readable, editable cell geometry; the JSX uses this exact result."""
-    if not matrix or not matrix[0] or len(matrix) < 2:
+    if (not isinstance(matrix, (list, tuple)) or len(matrix) < 2 or
+            not isinstance(matrix[0], (list, tuple)) or not matrix[0]):
         raise ValueError("需要至少一行有效表格数据。")
     columns, row_count = len(matrix[0]), len(matrix) - 1
-    if any(len(row) != columns for row in matrix):
+    if any(not isinstance(row, (list, tuple)) or len(row) != columns for row in matrix):
         raise ValueError("表格各行列数不一致。")
+    width = finite_number(width, 0)
+    if width <= 0:
+        raise ValueError("当前母版的表格可用宽度无效。")
     style = style or {}
-    default_px = finite_number(style.get("px"), 24)
+    default_px = max(16, finite_number(style.get("px"), 24))
     header_min = finite_number(style.get("headerMin"), 32)
     header = max(header_min, finite_number(style.get("headerHeight"), 65))
     min_row = max(30, min(40, default_px + 10))
@@ -196,7 +202,13 @@ def plan_table(matrix, width, height, style=None):
             break
         px -= 1
     if px < 16:
-        raise ValueError("表格列内容超出本区可读宽度，请按指标分表。")
+        needed = sum(max(36, math.ceil(demand * 16 / default_px) + padding) for demand in demands)
+        widest = max(range(columns), key=lambda column: demands[column])
+        heading = str(matrix[0][widest])
+        if len(heading) > 18:
+            heading = heading[:18] + "…"
+        raise ValueError(f"{columns} 列在最小可读字号下需要 {needed} px，当前可用 {math.floor(width)} px；"
+                         f"第 {widest + 1} 列「{heading}」较宽。")
     # Water fill the narrower columns without squeezing a long heading/feedback.
     lower, upper = 0., float(width)
     for _ in range(50):
@@ -223,7 +235,28 @@ def _shift(rect, dy):
     return result
 
 
-def plan_layout(profile, color_count, tables, scene_count, *, has_hero=True, has_brand=None, size_note=None):
+def _subtract_rectangles(rectangles, protected):
+    """Leave only table pixels, never a neighbouring measurement or note."""
+    result = [list(rectangle) for rectangle in rectangles]
+    for mask in protected:
+        mx, my, mw, mh = mask
+        pieces = []
+        for x, y, width, height in result:
+            left, top = max(x, mx), max(y, my)
+            right, bottom = min(x + width, mx + mw), min(y + height, my + mh)
+            if left >= right or top >= bottom:
+                pieces.append([x, y, width, height])
+                continue
+            for piece in ([x, y, width, top - y], [x, bottom, width, y + height - bottom],
+                          [x, top, left - x, bottom - top], [right, top, x + width - right, bottom - top]):
+                if piece[2] > .001 and piece[3] > .001:
+                    pieces.append(piece)
+        result = pieces
+    return result
+
+
+def plan_layout(profile, color_count, tables, scene_count, *, has_hero=True, has_brand=None, size_note=None,
+                table_issues=None):
     """Resolve original master geometry into this product's complete page layout."""
     if not isinstance(profile, dict) or not profile.get("modules"):
         raise ValueError("母版缺少版式记录，请重新校验母版。")
@@ -233,9 +266,10 @@ def plan_layout(profile, color_count, tables, scene_count, *, has_hero=True, has
     has_brand = bool(scene_count) if has_brand is None else bool(has_brand)
     raw_modules = profile["modules"]
     raw_modules = list(raw_modules.values()) if isinstance(raw_modules, dict) else raw_modules
+    compact = profile.get("compact_version") == 1
     modules = {module["role"]: {**copy.deepcopy(module), "original_rect": _rect(module.get("rect")),
                                 "rect": _rect(module.get("rect")), "visible": True}
-               for module in raw_modules}
+               for module in raw_modules if not compact or module["role"] in COMPACT_ROLES}
     color_spec = profile.get("colors", {})
     colors_module = modules.get("colors")
     if colors_module is None:
@@ -265,17 +299,58 @@ def plan_layout(profile, color_count, tables, scene_count, *, has_hero=True, has
     color_height = original_color[3] + (rows - 1) * row_step
     target_heights = {"colors": color_height}
     table_plans = {}
-    measurement = profile.get("view_slots", {}).get("measurement") or {}
+    table_status = {}
+    omitted_tables = {}
+    table_issues = table_issues if isinstance(table_issues, dict) else {}
+    measurement = copy.deepcopy(profile.get("view_slots", {}).get("measurement") or {})
+    note = copy.deepcopy(profile.get("size_note"))
+
+    def omit_table(key, role, module, state, reason):
+        table_status[key] = {"state": state, "reason": str(reason or "")}
+        if module is None:
+            return
+        module["table_visible"] = False
+        module["table_height_delta"] = 0
+        # The size table can share its parent/background with a measurement,
+        # editable note, or the hat's separate measurement-method module.
+        # Keep that native content at its source position. Independent table
+        # blocks can safely collapse as before.
+        method = modules.get("measurement_method")
+        shared_method = bool(method and module.get("path") == method.get("path"))
+        retained = role == "size_table" and bool(measurement or (note and size_note != "") or shared_method)
+        module["visible"] = retained
+        target_heights[role] = module["original_rect"][3] if retained else 0
+        table = module.get("table", {})
+        source_rect = _rect(table.get("cover_rect") or table.get("rect"), module["original_rect"])
+        protected = []
+        if role == "size_table":
+            if measurement.get("rect"):
+                protected.append(_rect(measurement["rect"]))
+            if note and note.get("rect"):
+                protected.append(_rect(note["rect"]))
+            if shared_method:
+                protected.append(method["original_rect"])
+        protected = [[x - 1, y - 1, width + 2, height + 2] for x, y, width, height in protected]
+        omitted_tables[key] = {"role": role, "state": state, "reason": str(reason or ""),
+                               "source_rect": source_rect,
+                               "source_clear_rects": _subtract_rectangles([source_rect], protected),
+                               "clear_rects": [], "retained_content": retained}
+
     for key, role in TABLE_ROLES.items():
         module = modules.get(role)
         matrix = tables.get(key)
+        issue = table_issues.get(key)
+        if isinstance(issue, dict):
+            issue = issue.get("reason") or issue.get("message")
         if module is None:
-            if matrix:
-                raise ValueError(f"母版没有{key}模块。")
+            omit_table(key, role, None, "skipped" if matrix or issue else "absent",
+                       issue or (f"当前母版没有{key}模块。" if matrix else ""))
+            continue
+        if issue:
+            omit_table(key, role, module, "skipped", issue)
             continue
         if not matrix:
-            module["visible"] = False
-            target_heights[role] = 0
+            omit_table(key, role, module, "absent", "未提供有效表格数据。")
             continue
         table = module.get("table", {})
         region = _rect(table.get("rect"), [module["rect"][0] + 20, module["rect"][1] + 90,
@@ -289,18 +364,128 @@ def plan_layout(profile, color_count, tables, scene_count, *, has_hero=True, has
                 right = min(right, left - 4)
             region[2] = right - region[0]
         style = table.get("style", {})
-        plan = plan_table(matrix, region[2], region[3], style)
+        try:
+            plan = plan_table(matrix, region[2], region[3], style)
+            reserved_height = profile.get("canvas", {}).get("height", 13395) + color_height - original_color[3]
+            reserved_height += sum(max(0, height - modules[name]["original_rect"][3])
+                                   for name, height in target_heights.items() if name != "colors")
+            if reserved_height + max(0, plan["height"] - region[3]) > 300000:
+                raise ValueError("表格行数超出 Photoshop 长图画布可容纳的范围。")
+        except (ValueError, TypeError, IndexError) as error:
+            omit_table(key, role, module, "skipped", str(error))
+            continue
+        module["table_visible"] = True
+        table_status[key] = {"state": "render", "reason": "", "columns": len(matrix[0]),
+                             "rows": len(matrix) - 1}
         grow = max(0, plan["height"] - region[3])
         module["table_height_delta"] = grow
         target_heights[role] = module["original_rect"][3] + grow
+        if compact and role in {"quick_size", "try_on"}:
+            # These independent tables have no measurement illustration or size
+            # note to reserve their old grid height. Keep the source heading and
+            # units in place, then end the block just after its actual content.
+            # The size-table module follows its separate helper-aware rules.
+            title_bottoms = []
+            for title in module.get("titles", []):
+                title_rect = _rect(title.get("rect"))
+                title_shift = grow if title_rect[1] >= region[1] + region[3] - 1 else 0
+                title_bottoms.append(title_rect[1] + title_rect[3] + title_shift)
+            content_bottom = max([region[1] + plan["height"], *title_bottoms])
+            target_heights[role] = max(40, math.ceil(content_bottom - module["original_rect"][1] + 20))
+            module["compact_table_fit"] = {"version": 1, "source_content_bottom": content_bottom,
+                                           "bottom_padding": target_heights[role] -
+                                           (content_bottom - module["original_rect"][1])}
         table_plans[key] = {"region": [*region[:3], plan["height"]], "plan": plan,
                             "spec": {"key": key, **style}, "original_region": region}
+        if table.get("mask"):
+            table_plans[key]["mask"] = table["mask"]
+            table_plans[key]["mask_rect"] = _rect(table.get("mask_rect") or table.get("rect"), region)
+        if table.get("cover_rect"):
+            cover = _rect(table["cover_rect"])
+            table_plans[key]["source_cover_rect"] = cover[:]
+            table_plans[key]["cover_rect"] = [*cover[:3], max(cover[3], plan["height"])]
+            if module.get("compact_table_fit"):
+                module_bottom = module["original_rect"][1] + target_heights[role]
+                fitted_cover = table_plans[key]["cover_rect"]
+                fitted_cover[3] = max(0, min(fitted_cover[1] + fitted_cover[3], module_bottom) - fitted_cover[1])
     note_layout = None
-    note = profile.get("size_note")
     size_module = modules.get("size_table")
     note_paths = set()
     note_shift = 0
-    if note and size_module and size_module["visible"] and note.get("after_table"):
+    compact_helpers = bool(compact and size_module and size_module["visible"] and
+                           size_module.get("table_visible") is False)
+    compact_note_fit = bool(compact and size_module and size_module["visible"] and
+                            size_module.get("table_visible") is True and not measurement and
+                            "03选尺码" in table_plans)
+    if compact_helpers:
+        # A skipped table must not reserve its former grid height. Its separate
+        # illustration and editable note still belong to this product, so place
+        # those helpers directly below the retained section heading.
+        original = size_module["original_rect"]
+        original_note_paths = {tuple(line["path"]) for line in (note or {}).get("lines", [])}
+        heading_bottom = max([original[1] + 20, *[
+            _rect(title.get("rect"))[1] + _rect(title.get("rect"))[3]
+            for title in size_module.get("titles", [])
+            if tuple(title.get("path") or ()) not in original_note_paths]])
+        cursor = heading_bottom + 20
+        helper_layout = {"version": 1, "measurement_rect": None, "note_rect": None, "note_lines": []}
+        if measurement.get("rect"):
+            measurement["rect"] = _rect(measurement["rect"])
+            measurement["rect"][1] = cursor
+            helper_layout["measurement_rect"] = measurement["rect"][:]
+            cursor += measurement["rect"][3] + 20
+        if note and size_note != "":
+            old_top = _rect(note["rect"])[1]
+            note_shift = cursor - old_top
+            note["rect"] = _shift(_rect(note["rect"]), note_shift)
+            for line in note["lines"]:
+                line["rect"] = _shift(_rect(line["rect"]), note_shift)
+            helper_layout["note_rect"] = note["rect"][:]
+            helper_layout["note_lines"] = [{"path": line["path"][:], "rect": line["rect"][:]}
+                                           for line in note["lines"]]
+            note_paths = original_note_paths
+            cursor = note["rect"][1] + note["rect"][3] + 20
+        size_module["helper_layout"] = helper_layout
+        target_heights["size_table"] = max(40, cursor - original[1])
+    if compact_note_fit:
+        # With no separate illustration, a valid short size table need not keep
+        # the old blank grid area before its note. Retain headings/units, put the
+        # native or edited note directly after actual table content, and let the
+        # same helper targets drive inherited Photoshop text and the preview.
+        original = size_module["original_rect"]
+        size_region = table_plans["03选尺码"]["region"]
+        original_note_paths = {tuple(line["path"]) for line in (note or {}).get("lines", [])}
+        note_paths = original_note_paths
+        static_bottoms = []
+        source_table = size_module.get("table", {}).get("rect")
+        for title in size_module.get("titles", []):
+            if tuple(title.get("path") or ()) in original_note_paths:
+                continue
+            title_rect = _rect(title.get("rect"))
+            shift = (size_module.get("table_height_delta", 0) if source_table and
+                     title_rect[1] >= source_table[1] + source_table[3] - 1 else 0)
+            static_bottoms.append(title_rect[1] + title_rect[3] + shift)
+        body_bottom = max([size_region[1] + size_region[3], *static_bottoms])
+        cursor = body_bottom + 20
+        helper_layout = {"version": 1, "measurement_rect": None, "note_rect": None, "note_lines": []}
+        if note and size_note != "":
+            note_shift = cursor - _rect(note["rect"])[1]
+            note["rect"] = _shift(_rect(note["rect"]), note_shift)
+            for line in note["lines"]:
+                line["rect"] = _shift(_rect(line["rect"]), note_shift)
+            helper_layout["note_rect"] = note["rect"][:]
+            helper_layout["note_lines"] = [{"path": line["path"][:], "rect": line["rect"][:]}
+                                           for line in note["lines"]]
+            cursor = note["rect"][1] + note["rect"][3] + 20
+        size_module["helper_layout"] = helper_layout
+        target_heights["size_table"] = max(40, cursor - original[1])
+        size_module["compact_table_fit"] = {"version": 1, "source_content_bottom": cursor - 20,
+                                             "bottom_padding": 20}
+        cover = table_plans["03选尺码"].get("cover_rect")
+        if cover:
+            cover[3] = max(0, min(cover[1] + cover[3], body_bottom) - cover[1])
+    if (note and size_module and size_module["visible"] and note.get("after_table") and
+            "03选尺码" in table_plans and not compact_note_fit):
         note_paths = {tuple(line["path"]) for line in note["lines"]}
         table_growth = size_module.get("table_height_delta", 0)
         size_region = table_plans["03选尺码"]["region"]
@@ -310,7 +495,8 @@ def plan_layout(profile, color_count, tables, scene_count, *, has_hero=True, has
     if note and size_note and size_module and size_module["visible"]:
         note_rect = _rect(note["rect"])
         picture = measurement.get("rect")
-        can_grow = note.get("after_table") and (not picture or picture[1] + picture[3] <= note_rect[1])
+        can_grow = compact_note_fit or (note.get("after_table") and
+                                        (not picture or picture[1] + picture[3] <= note_rect[1]))
         try:
             # Wrap at the template's type size, then keep only the height used.
             fit_rect = [*note_rect[:3], 100 * (len(size_note) + 1)] if can_grow else note_rect
@@ -322,8 +508,36 @@ def plan_layout(profile, color_count, tables, scene_count, *, has_hero=True, has
         if can_grow:
             note_layout["rect"][3] = max(height, note_rect[3])
             target_heights["size_table"] += max(0, height - note_rect[3])
+            if compact_note_fit:
+                size_module["helper_layout"]["note_rect"] = note_layout["rect"][:]
+                size_module["compact_table_fit"]["source_content_bottom"] = note_layout["rect"][1] + note_layout["rect"][3]
+    if compact_helpers:
+        # The old cover may reach far beyond the newly collapsed module. Clamp
+        # it before subtracting the helpers in their *new* source coordinates,
+        # so a white clearing panel cannot cover the following method block.
+        omission = omitted_tables.get("03选尺码")
+        if omission:
+            x, y, width, height = omission["source_rect"]
+            mx, my, mw, _ = size_module["original_rect"]
+            bottom = my + target_heights["size_table"]
+            left, top = max(x, mx), max(y, my)
+            right, clipped_bottom = min(x + width, mx + mw), min(y + height, bottom)
+            clipped = ([left, top, right - left, clipped_bottom - top]
+                       if right > left and clipped_bottom > top else None)
+            protected = []
+            if measurement.get("rect"):
+                protected.append(measurement["rect"])
+            if note and size_note != "":
+                protected.append(note_layout["rect"] if note_layout else note["rect"])
+            protected = [[px - 1, py - 1, pw + 2, ph + 2] for px, py, pw, ph in protected]
+            omission["source_clear_rects"] = _subtract_rectangles([clipped], protected) if clipped else []
+            omission["clipped_source_rect"] = clipped
     scene_module = modules.get("scenes")
-    view_slots = copy.deepcopy(profile.get("view_slots", {}))
+    view_slots = {key: copy.deepcopy(slot) for key, slot in profile.get("view_slots", {}).items()
+                  if not compact or (slot.get("role") or ("scenes" if key.startswith("scene_") else key))
+                  in COMPACT_ROLES}
+    if compact_helpers and measurement:
+        view_slots["measurement"] = copy.deepcopy(measurement)
     if scene_module:
         if scene_count == 0:
             target_heights["scenes"] = 0
@@ -352,7 +566,7 @@ def plan_layout(profile, color_count, tables, scene_count, *, has_hero=True, has
         original = module["original_rect"]
         height = target_heights.get(module["role"], original[3])
         if module["visible"] and hidden_since_visible and previous_end is not None:
-            adjustment = min(0, previous_end + 80 - (original[1] + delta))
+            adjustment = min(0, previous_end + (30 if compact else 80) - (original[1] + delta))
             delta += adjustment
             events.append((original[1], adjustment))
         module["rect"] = [original[0], original[1] + delta, original[2], height]
@@ -389,6 +603,23 @@ def plan_layout(profile, color_count, tables, scene_count, *, has_hero=True, has
     for key, table in table_plans.items():
         dy = modules[TABLE_ROLES[key]].get("delta_y", 0)
         table["region"] = _shift(table["region"], dy)
+        if table.get("cover_rect"):
+            table["cover_rect"] = _shift(table["cover_rect"], dy)
+    for key, omitted in omitted_tables.items():
+        module = modules[omitted["role"]]
+        dy = module.get("delta_y", 0)
+        omitted["rect"] = _shift(omitted["source_rect"], dy)
+        omitted["clear_rects"] = ([_shift(rectangle, dy) for rectangle in omitted["source_clear_rects"]]
+                                  if module["visible"] else [])
+        module["table_clear_rects"] = copy.deepcopy(omitted["clear_rects"])
+    if compact_helpers or compact_note_fit:
+        helpers = size_module["helper_layout"]
+        dy = size_module.get("delta_y", 0)
+        for key in ("measurement_rect", "note_rect"):
+            if helpers[key] is not None:
+                helpers[key] = _shift(helpers[key], dy)
+        for line in helpers["note_lines"]:
+            line["rect"] = _shift(line["rect"], dy)
     for name, slot in view_slots.items():
         role = slot.get("role") or ("scenes" if name.startswith("scene_") else name)
         module = modules.get(role)
@@ -400,13 +631,32 @@ def plan_layout(profile, color_count, tables, scene_count, *, has_hero=True, has
         if name.startswith("scene_"):
             slot["visible"] = slot["visible"] and int(name.split("_")[-1]) <= scene_count
     if note_layout:
-        note_layout["rect"] = _shift(note_layout["rect"], size_module["delta_y"] + note_shift)
+        note_layout["rect"] = _shift(note_layout["rect"], size_module["delta_y"] +
+                                     (0 if compact_helpers or compact_note_fit else note_shift))
     canvas = copy.deepcopy(profile.get("canvas", {"width": 790, "height": 13395}))
     canvas["height"] = max(1000, math.ceil(canvas["height"] + delta))
+    if compact:
+        # A compact master has no permanent footer. Use the last actual module,
+        # including a dynamically generated fourth scene, rather than retaining
+        # the height of an unused scene/old brand page after an omission.
+        visible_bottom = max(module["rect"][1] + module["rect"][3] for module in modules.values()
+                             if module.get("visible") and module["rect"][3] > 0)
+        canvas["height"] = max(1000, math.ceil(visible_bottom + 20))
     if canvas["height"] > 300000:
         raise ValueError("当前资料超出 Photoshop 长图画布范围，请分款或分表。")
-    return {"canvas": canvas, "modules": modules, "module_order": [item["role"] for item in sorted(
+    result = {"canvas": canvas, "modules": modules, "module_order": [item["role"] for item in sorted(
             modules.values(), key=lambda item: item["rect"][1])],
             "colors": {"items": items, "rows": rows, "columns": columns,
                        "rect": modules["colors"]["rect"]},
-            "tables": table_plans, "view_slots": view_slots, "size_note": note_layout}
+            "tables": table_plans, "table_status": table_status, "omitted_tables": omitted_tables,
+            "view_slots": view_slots, "size_note": note_layout}
+    if compact:
+        result["compact_content"] = {
+            "version": 1,
+            "kept_roles": [role for role in result["module_order"] if modules[role].get("visible")],
+            "omitted_roles": [module["role"] for module in raw_modules
+                              if module["role"] not in modules or not modules[module["role"]].get("visible")],
+            "bottom_margin": canvas["height"] - visible_bottom,
+            "max_collapsed_gap": 30,
+        }
+    return result

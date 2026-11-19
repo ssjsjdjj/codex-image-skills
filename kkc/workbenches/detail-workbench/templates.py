@@ -21,6 +21,9 @@ TEMPLATE = ROOT / "template.psb"
 SOURCE_SIZE = (790, 40000)
 DEFAULT_SOURCE = ROOT.parent / "详情页母版" / "小山行风感洞洞裤-终.psb"
 ASSET_KEYS = {"mask", "foreground", "clean_preview", "original_preview", "working_preview", "image", "original"}
+COMPACT_VERSION = 1
+COMPACT_ROLES = {"header", "hero", "product", "colors", "size_table", "quick_size", "try_on",
+                 "measurement_method", "scenes"}
 
 
 class TemplateUpgradeRequired(ValueError):
@@ -34,6 +37,24 @@ class UnsupportedTemplateError(ValueError):
 def _needs_product_attributes(profile):
     return ("product_attributes" not in profile and profile.get("family") == "classic"
             and any(path[-1:] == ["组 1024"] for path in profile.get("omitted_paths", [])))
+
+
+def _resolve_profile_assets(value, folder):
+    if isinstance(value, dict):
+        return {key: str((folder / item).resolve()) if key in ASSET_KEYS and isinstance(item, str)
+                else _resolve_profile_assets(item, folder) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_resolve_profile_assets(item, folder) for item in value]
+    return value
+
+
+def validate_compact_profile(profile):
+    """A full original must not silently become the preview or export template."""
+    if profile.get("compact_version") != COMPACT_VERSION:
+        raise TemplateUpgradeRequired("该母版需要更新为仅保留必要页面的精简工作母版。")
+    roles = {module.get("role") for module in profile.get("modules", [])}
+    if not {"product", "colors"} <= roles or not roles <= COMPACT_ROLES:
+        raise ValueError("精简母版的保留模块记录无效，请重新整理母版。")
 
 
 @dataclass(frozen=True)
@@ -61,21 +82,38 @@ class Template:
             raise TemplateUpgradeRequired(f"母版「{self.label}」的布局记录需要重新提取。")
         if _needs_product_attributes(profile):
             raise TemplateUpgradeRequired(f"母版「{self.label}」需要重新提取 STEP1 属性组件。")
-        def resolve_assets(value):
-            if isinstance(value, dict):
-                return {key: str((path.parent / item).resolve()) if key in ASSET_KEYS
-                        and isinstance(item, str) else resolve_assets(item) for key, item in value.items()}
-            if isinstance(value, list):
-                return [resolve_assets(item) for item in value]
-            return value
-        return resolve_assets(profile)
+        validate_compact_profile(profile)
+        return _resolve_profile_assets(profile, path.parent)
+
+    def working_preview_info(self):
+        """Describe only the compact, editable working master used for generation."""
+        info = {"version": 1, "scope": "compact", "status": "unavailable", "preview": None,
+                "working_dimensions": list(self.dimensions), "preview_dimensions": None,
+                "message": "精简母版预览尚未准备完成，请重新整理该母版。"}
+        try:
+            profile = self.profile()
+            path = Path(profile["working_preview"])
+            if path.name == Path(profile.get("original_preview") or "original.jpg").name:
+                raise ValueError("精简母版预览不能使用完整原稿参考图。")
+            if path.parent.resolve() != self.path.parent.resolve():
+                raise ValueError("精简母版预览不在当前母版资源目录中。")
+            with Image.open(path) as image:
+                dimensions = list(image.size)
+                if image.width < 1 or abs(image.height - round(image.width * self.dimensions[1] / self.dimensions[0])) > 1:
+                    raise ValueError("精简母版预览尺寸与工作母版不一致。")
+            info.update(status="ready", preview=str(path.resolve()), preview_dimensions=dimensions,
+                        kept_roles=[item["role"] for item in profile["modules"]],
+                        message="精简母版版式 · 仅显示必要页面，示例图片用于参考")
+        except (OSError, ValueError, KeyError, TypeError) as error:
+            info["message"] = f"精简母版预览不可用：{error}"
+        return info
 
     def original_preview_info(self):
         """Describe the full source reference, separately from the working layout."""
         path = reference_metadata_path(self)
         try:
             info = json.loads(path.read_text(encoding="utf-8"))
-            if info.get("version") != 1 or info.get("status") not in {"ready", "unavailable"}:
+            if info.get("version") != 1 or info.get("status") not in {"ready", "unavailable", "archived"}:
                 raise ValueError("原稿参考记录无效。")
         except (OSError, ValueError, TypeError):
             return {"version": 1, "status": "legacy", "source": self.source,
@@ -104,19 +142,27 @@ class Template:
                 "dimensions": list(self.dimensions), "layout": self.layout,
                 "source_dimensions": list(self.source_dimensions or self.dimensions),
                 "original_reference": self.original_preview_info(),
+                "working_reference": self.working_preview_info(),
                 "profile": self.profile(),
                 "stamp": [stats.st_size, stats.st_mtime_ns]}
 
 
 def default_template():
     source, source_dimensions = str(DEFAULT_SOURCE), SOURCE_SIZE
+    dimensions = TEMPLATE_SIZE
     try:
         metadata = json.loads((ROOT / "template-reference.json").read_text(encoding="utf-8"))
         source = metadata.get("source") or source
         source_dimensions = tuple(metadata.get("source_dimensions") or source_dimensions)
     except (OSError, ValueError, TypeError):
         pass
-    return Template("builtin", TEMPLATE_LABEL, TEMPLATE, source, source_dimensions=source_dimensions,
+    try:
+        profile = json.loads((ROOT / "template-profile.json").read_text(encoding="utf-8"))
+        if profile.get("compact_version") == COMPACT_VERSION:
+            dimensions = (profile["canvas"]["width"], profile["canvas"]["height"])
+    except (OSError, ValueError, KeyError, TypeError):
+        pass
+    return Template("builtin", TEMPLATE_LABEL, TEMPLATE, source, dimensions=dimensions, source_dimensions=source_dimensions,
                     preview=ROOT / "template-header.jpg", footer_preview=ROOT / "template-footer.jpg",
                     original_preview=ROOT / "template-original.jpg", profile_path=ROOT / "template-profile.json")
 
@@ -142,7 +188,8 @@ def saved_template(folder, metadata):
     if len(dimensions) != 2 or any(type(value) is not int or value < 1 for value in dimensions) or layout not in {"workbench", "classic"}:
         raise ValueError("母版版式记录无效。")
     return Template(folder.name, label, folder / "base.psb", source, dimensions,
-                    preview=folder / "header.jpg", footer_preview=folder / "footer.jpg", layout=layout,
+                    preview=folder / "header.jpg" if (folder / "header.jpg").is_file() else None,
+                    footer_preview=folder / "footer.jpg" if (folder / "footer.jpg").is_file() else None, layout=layout,
                     source_dimensions=source_dimensions, original_preview=folder / "original.jpg",
                     profile_path=folder / "profile.json")
 
@@ -229,6 +276,8 @@ def run_template_action(folder, script_files, call, spec, *, bounded=False, noti
     marker = folder / f"{call}.done"
     request = {**spec, "done": str(marker)}
     progress = folder / f"{call}.progress"
+    for stale in (marker, progress, progress.with_suffix(".cancel")):
+        stale.unlink(missing_ok=True)
     if bounded:
         request.update(progress=str(progress), cancel=str(progress.with_suffix(".cancel")))
     payload = json.dumps(request, ensure_ascii=True)
@@ -272,9 +321,9 @@ def run_template_action(folder, script_files, call, spec, *, bounded=False, noti
         raise ValueError("Photoshop 未完成母版校验。")
 
 
-MANIFEST_SCRIPTS = ("editable_long_psd.jsx", "classic_workbench.jsx", "workbench.jsx",
+MANIFEST_SCRIPTS = ("mixed_detail_fonts.jsx", "editable_long_psd.jsx", "classic_workbench.jsx", "workbench.jsx",
                     "template_reference.jsx", "prepare_template.jsx", "template_manifest.jsx",
-                    "section_template.jsx", "template_classifier.jsx")
+                    "compact_template.jsx", "section_template.jsx", "template_classifier.jsx")
 
 
 @contextmanager
@@ -638,54 +687,175 @@ def upgrade_product_attributes(template, profile_path, profile):
     return template
 
 
-def upgrade_template(template):
-    """Extract native layer bindings and previews without altering the selected PSB."""
-    destination = template.path.parent
-    profile_target = template.profile_path or destination / "profile.json"
+def _compact_reference(folder, source, source_dimensions, dimensions):
+    """Keep source provenance without publishing full-original image caches."""
+    profile_path = folder / "profile.json"
+    profile = json.loads(profile_path.read_text(encoding="utf-8"))
+    profile.pop("original_preview", None)
+    _write_json_atomic(profile_path, profile)
+    (folder / "original.jpg").unlink(missing_ok=True)
+    _write_json_atomic(folder / "reference.json", {
+        "version": 1, "status": "archived", "source": str(source),
+        "source_dimensions": list(source_dimensions), "working_dimensions": list(dimensions),
+        "preview_dimensions": None, "preview": None,
+        "message": "原稿来源记录保留；工作台只显示和使用精简母版。"})
+
+
+def _copy_missing_profile_assets(profile, folder):
+    """Preserve native assets still referenced by the new profile, never old page caches."""
+    def visit(value):
+        if isinstance(value, dict):
+            for key, item in value.items():
+                if key in ASSET_KEYS and isinstance(item, str) and key != "original_preview":
+                    source = Path(item)
+                    target = folder / source.name
+                    if not target.exists():
+                        if not source.is_absolute() or not source.is_file():
+                            raise ValueError(f"精简母版缺少引用的资源：{source.name}")
+                        shutil.copy2(source, target)
+                else:
+                    visit(item)
+        elif isinstance(value, list):
+            for item in value:
+                visit(item)
+    visit(profile)
+
+
+def _upgrade_attributes_in_stage(profile, source, scratch, assets):
+    if not _needs_product_attributes(profile):
+        return
+    output = scratch / "attributes.json"
+    run_template_action(scratch, MANIFEST_SCRIPTS, "reviewManifestProductAttributes",
+                        {"source": str(source), "assetsFolder": str(assets), "output": str(output)})
+    attributes = json.loads(output.read_text(encoding="utf-8-sig"))
+    profile["product_attributes"] = attributes
+    if attributes:
+        product = next(item for item in profile["modules"] if item["role"] == "product")
+        if attributes["path"] not in product["move_paths"]:
+            product["move_paths"].append(attributes["path"])
+
+
+def _publish_builtin_compact(template, assets, profile):
+    """Retain the legacy built-in entry while committing its base/profile last."""
+    backup = LIBRARY / ".backups" / ("builtin-" + uuid4().hex)
+    backup.mkdir(parents=True)
+    def prefix_assets(value):
+        if isinstance(value, dict):
+            return {key: "template-" + item if key in ASSET_KEYS and isinstance(item, str)
+                    else prefix_assets(item) for key, item in value.items()}
+        if isinstance(value, list):
+            return [prefix_assets(item) for item in value]
+        return value
+    _write_json_atomic(assets / "profile.json", prefix_assets(profile))
+    paths = [p for p in assets.iterdir() if p.is_file() and p.name not in {"base.psb", "profile.json", "template.json"}]
+    paths += [assets / "base.psb", assets / "profile.json"]
+    published, saved = [], []
     try:
-        existing = json.loads(profile_target.read_text(encoding="utf-8"))
+        for asset in paths:
+            target = template.path if asset.name == "base.psb" else ROOT / ("template-" + asset.name)
+            if target.exists():
+                shutil.copy2(target, backup / target.name)
+                saved.append(target)
+            staged = target.with_name(target.name + ".compact-" + uuid4().hex)
+            shutil.copy2(asset, staged)
+            staged.replace(target)
+            published.append(target)
+    except BaseException:
+        for target in reversed(published):
+            if target in saved:
+                shutil.copy2(backup / target.name, target)
+            else:
+                target.unlink(missing_ok=True)
+        raise
+    return default_template()
+
+
+def upgrade_template(template):
+    """Publish a compact base and matching assets together under the original ID."""
+    destination = template.path.parent.resolve()
+    profile_path = template.profile_path or destination / "profile.json"
+    try:
+        existing = json.loads(profile_path.read_text(encoding="utf-8"))
     except (OSError, ValueError):
         existing = {}
-    if (existing.get("version") == 1 and existing.get("canvas") ==
-            {"width": template.dimensions[0], "height": template.dimensions[1]} and _needs_product_attributes(existing)):
-        return upgrade_product_attributes(template, profile_target, existing)
-    with TemporaryDirectory(prefix=".profile-upgrade-", dir=ROOT) as temporary:
-        scratch = Path(temporary)
-        assets = scratch / "assets"
+    if existing.get("compact_version") == COMPACT_VERSION and not _needs_product_attributes(existing):
+        template.profile()
+        return template
+    LIBRARY.mkdir(exist_ok=True)
+    if template.id != "builtin" and (destination.parent != LIBRARY.resolve() or destination.name != template.id):
+        raise ValueError("无法核对母版升级目录，原母版未更改。")
+    before = template.path.stat()
+    stamp = (before.st_size, before.st_mtime_ns)
+    with template_import_scratch() as scratch:
+        assets = scratch / "publish"
         assets.mkdir()
-        try:
-            reference = _reference_capture(template, scratch, assets / "original.jpg")
-        except (OSError, ValueError, RuntimeError, struct.error, IndexError) as error:
-            reference = _unavailable_reference(template, error)
-        _write_json_atomic(assets / "reference.json", reference)
         source = scratch / "source.psb"
         clean_copy(template.path, source)
-        spec = prepare_profile_assets(assets, {"source": str(source), "output": "",
+        spec = prepare_profile_assets(assets, {"source": str(source), "output": str(assets / "base.psb"),
+            "normalizedOutput": str(assets / "base.psb"), "originalPreviewReady": True,
             "headerPreview": str(assets / "header.jpg"), "footerPreview": str(assets / "footer.jpg"),
-            "sourceIsWorking": False, "sourceCanvas": reference["source_dimensions"]})
-        run_template_action(scratch, MANIFEST_SCRIPTS, "reviewUploadedTemplate", spec)
+            "sourceIsWorking": False, "sourceCanvas": list(template.source_dimensions or template.dimensions)})
+        if (existing.get("version") == 1 and existing.get("canvas") ==
+                {"width": template.dimensions[0], "height": template.dimensions[1]}):
+            profile = _resolve_profile_assets(existing, profile_path.parent)
+            _upgrade_attributes_in_stage(profile, source, scratch, assets)
+            spec["profile"] = profile
+            action = "compactWorkbenchTemplate"
+        else:
+            action = "reviewUploadedTemplate"
+        run_template_action(scratch, MANIFEST_SCRIPTS, action, spec, bounded=True)
+        profile = json.loads((assets / "profile.json").read_text(encoding="utf-8-sig"))
+        _copy_missing_profile_assets(profile, assets)
+        profile.pop("original_preview", None)
+        _write_json_atomic(assets / "profile.json", profile)
         profile = finish_profile_assets(assets)
-        prefix = "template-" if template.id == "builtin" else ""
-        for asset in assets.iterdir():
-            if asset.name == "profile.json":
-                continue
-            name = prefix + asset.name
-            target = destination / name
-            staged = target.with_suffix(target.suffix + ".part")
-            shutil.copyfile(asset, staged)
-            staged.replace(target)
-        def prefix_assets(value):
-            if isinstance(value, dict):
-                return {key: prefix + item if key in ASSET_KEYS
-                        and isinstance(item, str) else prefix_assets(item) for key, item in value.items()}
-            if isinstance(value, list):
-                return [prefix_assets(item) for item in value]
-            return value
-        staged = profile_target.with_suffix(".json.part")
-        staged.write_text(json.dumps(prefix_assets(profile), ensure_ascii=False, indent=2), encoding="utf-8")
-        staged.replace(profile_target)
-    template.profile()
-    return template
+        validate_compact_profile(profile)
+        dimensions = tuple(template_header(assets / "base.psb")[1:])
+        if profile["canvas"] != {"width": dimensions[0], "height": dimensions[1]}:
+            raise ValueError("精简母版与版式记录尺寸不一致，未发布升级。")
+        _compact_reference(assets, template.source, template.source_dimensions or template.dimensions, dimensions)
+        metadata = {"label": template.label, "source": template.source, "dimensions": list(dimensions),
+                    "source_dimensions": list(template.source_dimensions or template.dimensions),
+                    "layout": template.layout, "compact_version": COMPACT_VERSION}
+        _write_json_atomic(assets / "template.json", metadata)
+        staged_template = saved_template(assets, metadata)
+        staged_template.snapshot()
+        if staged_template.working_preview_info()["status"] != "ready":
+            raise ValueError("精简母版示例预览未通过核验，未发布升级。")
+        after = template.path.stat()
+        if (after.st_size, after.st_mtime_ns) != stamp:
+            raise ValueError("整理期间母版发生变化，原母版未更改，请重试。")
+        if template.id == "builtin":
+            return _publish_builtin_compact(template, assets, profile)
+        backups = LIBRARY / ".backups"
+        backups.mkdir(exist_ok=True)
+        if backups.resolve().parent != LIBRARY.resolve():
+            raise ValueError("无法核对母版归档目录。")
+        backup = backups / (template.id + "-" + uuid4().hex)
+        destination.rename(backup)
+        try:
+            assets.rename(destination)
+        except BaseException:
+            backup.rename(destination)
+            raise
+    return saved_template(destination, metadata)
+
+
+def repair_working_preview(template):
+    """Refresh only the compact master reference, without requiring the full original."""
+    try:
+        profile = template.profile()
+    except TemplateUpgradeRequired:
+        return upgrade_template(template).working_preview_info()
+    target = Path(profile["working_preview"])
+    with TemporaryDirectory(prefix=".working-preview-", dir=ROOT) as temporary:
+        scratch = Path(temporary)
+        output = scratch / "working.jpg"
+        _reference_capture(template, scratch, output, source=template.path)
+        staged = target.with_name(target.name + ".part")
+        shutil.copyfile(output, staged)
+        staged.replace(target)
+    return template.working_preview_info()
 
 
 def import_template(path, *, notify=None):
@@ -760,20 +930,16 @@ def import_template(path, *, notify=None):
             normalized.replace(master)
         metadata["layout"] = layout_report.read_text(encoding="ascii")
         metadata["dimensions"] = list(template_header(master)[1:])
+        metadata["compact_version"] = COMPACT_VERSION
         if notify:
             notify("正在校验图位和预览文件…")
-        finish_profile_assets(publish)
-        with Image.open(publish / "original.jpg") as image:
-            preview_dimensions = list(image.size)
-        _write_json_atomic(publish / "reference.json", {
-            "version": 1, "status": "ready", "source": str(source),
-            "source_stamp": [before.st_size, before.st_mtime_ns], "source_dimensions": list(size),
-            "working_dimensions": metadata["dimensions"], "preview_dimensions": preview_dimensions,
-            "preview": "original.jpg", "captured_at": datetime.now().astimezone().isoformat(timespec="seconds"),
-            "message": "原稿完整参考（含原稿中可见的示例图片）；套版使用独立工作副本。"})
-        saved_template(publish, metadata).snapshot()
-        if not all((publish / name).is_file() for name in ("header.jpg", "footer.jpg")):
-            raise ValueError("Photoshop 未生成母版预览。")
+        _compact_reference(publish, source, size, metadata["dimensions"])
+        profile = finish_profile_assets(publish)
+        validate_compact_profile(profile)
+        item = saved_template(publish, metadata)
+        item.snapshot()
+        if item.working_preview_info()["status"] != "ready":
+            raise ValueError("Photoshop 未生成精简母版预览。")
         (publish / "template.json").write_text(json.dumps(metadata, ensure_ascii=False, indent=2), encoding="utf-8")
         publish.rename(destination)
     return saved_template(destination, metadata)

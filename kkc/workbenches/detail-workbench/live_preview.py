@@ -107,6 +107,7 @@ class PreviewPane(ttk.Frame):
         self.decoration_errors = {}
         self.decoration_hits = []
         self.assets = OrderedDict()
+        self.active_asset_keys = set()
         self.rasters = OrderedDict()
         self.final_raster = None
         self.original_raster = None
@@ -162,15 +163,16 @@ class PreviewPane(ttk.Frame):
 
     def render(self, info, colors, products, scenes, tables, template_label, template_image=None, footer_image=None,
                layout="workbench", template_profile=None, template_full_image=None, views=None, extra_images=None,
-               template_original_info=None, hidden_decorations=None):
+               template_original_info=None, hidden_decorations=None, table_issues=None):
         """Queue a draft without changing mode. Legacy per-image views are ignored."""
         data = (dict(info), tuple(colors), dict(products), tuple(scenes),
                 {key: tuple(tuple(row) for row in matrix) for key, matrix in tables.items() if matrix},
                 template_label, template_image, footer_image, layout, copy.deepcopy(template_profile),
                 template_full_image, {}, dict(extra_images or {}), copy.deepcopy(template_original_info or {}),
-                frozenset(hidden_decorations or ()))
+                frozenset(hidden_decorations or ()), dict(table_issues or {}))
         if data == self.state_data:
             return
+        self.active_asset_keys.clear()
         first_render = self.state_data is None
         if self.state_data and (self.state_data[5] != template_label or self.state_data[9] != template_profile):
             self.dismiss_decoration_menu()
@@ -192,6 +194,17 @@ class PreviewPane(ttk.Frame):
                            *[slot.get(key) for slot in template_profile.get("view_slots", {}).values()
                              for key in ("mask", "foreground", "original")]] if path)
             sources.update(str(item["image"]) for item in self.decoration_specs().values() if item.get("image"))
+            modules = template_profile.get("modules", [])
+            modules = modules.values() if isinstance(modules, dict) else modules
+            for module in modules:
+                sources.update(str(item["image"]) for item in module.get("skin_backgrounds", []) if item.get("image"))
+                foreground = module.get("skin_foreground", {})
+                if foreground.get("image"):
+                    sources.add(str(foreground["image"]))
+                if foreground.get("multiply", {}).get("image"):
+                    sources.add(str(foreground["multiply"]["image"]))
+                if module.get("table", {}).get("mask"):
+                    sources.add(str(module["table"]["mask"]))
         for key in [key for key in self.pending if not key[1] and key[0] not in sources]:
             self.cancel_load(key)
         self.update_scene_entry()
@@ -228,7 +241,7 @@ class PreviewPane(ttk.Frame):
 
     def update_caption(self):
         if self.mode == "original":
-            text = self.original_info.get("message") or "原始母版参考 · 保留示例画面"
+            text = self.original_info.get("message") or "精简母版版式 · 仅显示必要页面"
         elif self.mode == "final":
             text = "上次导出的 JPG · 当前编辑尚未导出" if self.final_stale else "Photoshop 导出的整页 JPG"
         else:
@@ -252,6 +265,7 @@ class PreviewPane(ttk.Frame):
         self.original_button.configure(style="PreviewButton.TButton")
         self.final_button.state(["!disabled"] if self.final else ["disabled"])
         if changed:
+            self.active_asset_keys.clear()
             self.canvas.yview_moveto(0)
         self.schedule()
 
@@ -259,6 +273,8 @@ class PreviewPane(ttk.Frame):
         if not self.final:
             return
         self.dismiss_decoration_menu()
+        if self.mode != "final":
+            self.active_asset_keys.clear()
         self.mode = "final"
         self.update_caption()
         self.live_button.configure(style="PreviewButton.TButton")
@@ -272,6 +288,8 @@ class PreviewPane(ttk.Frame):
         if not self.original and not self.original_info:
             return
         self.dismiss_decoration_menu()
+        if self.mode != "original":
+            self.active_asset_keys.clear()
         self.mode = "original"
         self.update_caption()
         self.original_button.configure(style="PreviewActive.TButton")
@@ -525,6 +543,10 @@ class PreviewPane(ttk.Frame):
 
     def load(self, path, full=False):
         key = (str(path), full)
+        # A single compact page can need more than 22 masks, skins and photos.
+        # Keep every asset requested by this render until its state/mode changes.
+        # Evicting one of those assets here causes an endless reload/repaint loop.
+        self.active_asset_keys.add(key)
         stamp = self.file_stamp(path)
         if key in self.asset_stamps and self.asset_stamps[key] != stamp:
             self.invalidate_asset(path, full)
@@ -560,16 +582,22 @@ class PreviewPane(ttk.Frame):
                 self.assets[key] = None
                 self.asset_errors[key] = image_error(error)
             self.cancel_load(key)
-            if len(self.assets) > 22:
-                expired, _ = self.assets.popitem(last=False)
-                self.asset_stamps.pop(expired, None)
-                self.asset_errors.pop(expired, None)
             changed = True
+        self.trim_assets()
         self.update_caption()
         if changed:
             self.schedule()
         if self.pending:
             self.poll_id = self.after(55, self.collect)
+
+    def trim_assets(self):
+        while len(self.assets) > 22:
+            expired = next((key for key in self.assets if key not in self.active_asset_keys), None)
+            if expired is None:
+                break
+            self.assets.pop(expired)
+            self.asset_stamps.pop(expired, None)
+            self.asset_errors.pop(expired, None)
 
     def font(self, size, bold=False):
         key = (size, bold)
@@ -594,9 +622,9 @@ class PreviewPane(ttk.Frame):
         self.canvas.create_rectangle(x, y, x + width, y + height, fill=color, outline="")
 
     def picture(self, x, y, width, height, path, *, crop=False, label="待绑定", background=PALE,
-                crop_state=None, mask=None, frame_size=None, foreground=None):
+                crop_state=None, mask=None, frame_size=None, foreground=None, visible_subject=False):
         self.picture_base(x, y, width, height, path, crop=crop, label=label, background=background,
-                          crop_state=crop_state, mask=mask, frame_size=frame_size)
+                          crop_state=crop_state, mask=mask, frame_size=frame_size, visible_subject=visible_subject)
         if not foreground:
             return
         key, image = self.load(foreground)
@@ -618,9 +646,9 @@ class PreviewPane(ttk.Frame):
         self.layout_raster(raster_key, rendered, x, y)
 
     def picture_base(self, x, y, width, height, path, *, crop=False, label="待绑定", background=PALE,
-                     crop_state=None, mask=None, frame_size=None):
+                     crop_state=None, mask=None, frame_size=None, visible_subject=False):
         width, height = max(1, round(width)), max(1, round(height))
-        if background is not None:
+        if background is not None and not (visible_subject and mask):
             self.panel(x, y, width, height, background)
         image = None
         if path:
@@ -655,7 +683,7 @@ class PreviewPane(ttk.Frame):
                 alpha = mask_image.getchannel("A").resize((width, height), Image.Resampling.LANCZOS)
             else:
                 self.invalid_masks.add(str(mask))
-        raster_key = (key, width, height, crop, background, state.get("zoom", 1), tuple(state.get("focus", [0.5, 0.5])), str(mask), crop_frame)
+        raster_key = (key, width, height, crop, background, state.get("zoom", 1), tuple(state.get("focus", [0.5, 0.5])), str(mask), crop_frame, visible_subject)
         if raster_key not in self.rasters:
             if crop:
                 source_w, source_h = image.info.get("source_size", image.size)
@@ -667,9 +695,15 @@ class PreviewPane(ttk.Frame):
                     fillcolor=(0, 0, 0, 0))
             else:
                 source_w, source_h = image.info.get("source_size", image.size)
+                subject = image
+                if visible_subject and image.info.get("visible_bounds"):
+                    left, top, right, bottom = image.info["visible_bounds"]
+                    subject = image.crop((round(left * image.width / source_w), round(top * image.height / source_h),
+                                          round(right * image.width / source_w), round(bottom * image.height / source_h)))
+                    source_w, source_h = right - left, bottom - top
                 scale = min(width / source_w, height / source_h)
                 fitted = (max(1, round(source_w * scale)), max(1, round(source_h * scale)))
-                product = image.resize(fitted, Image.Resampling.LANCZOS)
+                product = subject.resize(fitted, Image.Resampling.LANCZOS)
                 rendered = Image.new("RGBA", (width, height), background or (0, 0, 0, 0))
                 rendered.alpha_composite(product, ((width - product.width) // 2, (height - product.height) // 2))
             if alpha is not None:
@@ -710,6 +744,9 @@ class PreviewPane(ttk.Frame):
         self.canvas.configure(scrollregion=(0, 0, width, self.content_height))
         self.canvas.yview_moveto(old_top / self.content_height)
         notices = []
+        if self.mode == "live":
+            notices.extend(f"{key}已跳过：{value['reason']}" for key, value in
+                           getattr(self, "table_status", {}).items() if value["state"] == "skipped")
         if self.invalid_masks:
             notices.append("图框蒙版无效，预览暂用矩形，请重新上传该母版。")
         if self.foreground_errors:
@@ -722,6 +759,7 @@ class PreviewPane(ttk.Frame):
                 self.notice.pack(fill="x", after=self.caption, pady=(0, 5))
         else:
             self.notice.pack_forget()
+        self.trim_assets()
 
     def paint_final(self, x, page):
         key, image = self.load(self.final, full=True)
@@ -742,11 +780,11 @@ class PreviewPane(ttk.Frame):
 
     def paint_original(self, x, page):
         if not self.original:
-            return self.paint_original_error(x, page, self.original_info.get("message") or "原始母版预览不可用，请重新选择原始 PSD/PSB。")
+            return self.paint_original_error(x, page, self.original_info.get("message") or "精简母版预览不可用，请重新读取工作母版。")
         key, image = self.load(self.original, full="original")
         if image is None:
             if key not in self.pending:
-                return self.paint_original_error(x, page, self.asset_errors.get(key) or self.original_info.get("message") or "母版原稿预览无法打开，文件可能已移动或尚未成功读取。")
+                return self.paint_original_error(x, page, self.asset_errors.get(key) or self.original_info.get("message") or "精简母版预览无法打开，文件可能已移动或尚未成功读取。")
             self.text(x + 14, 28, "正在读取母版版式…", fill=MUTED, width=page - 28)
             return 160
         height = max(1, round(image.height * page / image.width))
@@ -758,7 +796,7 @@ class PreviewPane(ttk.Frame):
         return height + 10
 
     def paint_original_error(self, x, page, message):
-        self.text(x + 14, 26, "母版原稿暂不可用", size=15, bold=True, fill=INK, width=page - 28)
+        self.text(x + 14, 26, "精简母版预览暂不可用", size=15, bold=True, fill=INK, width=page - 28)
         item = self.text(x + 14, 60, message, size=12, fill=MUTED, width=page - 28)
         bottom = self.canvas.bbox(item)[3] + 18
         if self.on_repair_original:
@@ -766,7 +804,7 @@ class PreviewPane(ttk.Frame):
             self.canvas.create_rectangle(x + 14, bottom, x + 14 + width, bottom + 40,
                                          fill="#e7ece9" if self.busy else GREEN, outline="", tags="repair-original")
             self.canvas.create_text(x + 14 + width / 2, bottom + 20,
-                                    text="正在处理…" if self.busy else "重新读取母版原稿", fill=MUTED if self.busy else "white",
+                                    text="正在处理…" if self.busy else "重新读取精简母版", fill=MUTED if self.busy else "white",
                                     font=self.font(12, True), tags="repair-original")
             self.canvas.tag_bind("repair-original", "<Button-1>", lambda _event: self.repair_original())
             bottom += 52
@@ -810,6 +848,87 @@ class PreviewPane(ttk.Frame):
             return
         width, height = max(1, round(visible_width * scale)), max(1, round(rect[3] * scale))
         left, top = x + (rect[0] + trim_left) * scale, 10 + rect[1] * scale
+        foreground = module.get("skin_foreground")
+        backgrounds = module.get("skin_backgrounds", [])
+        if foreground and backgrounds:
+            layers = []
+            for background in backgrounds:
+                asset_key, image = self.load(background["image"], full="skin")
+                if image is None:
+                    return
+                owner = self.last_geometry["modules"].get(background.get("owner_role"), target)
+                if not owner.get("visible", True):
+                    continue
+                raw = background["rect"]
+                frame = [raw[0], raw[1] + owner.get("delta_y", 0), raw[2],
+                         max(1, raw[3] + owner.get("height_delta", 0))]
+                layers.append((asset_key, image, frame))
+            foreground_key, foreground_image = self.load(foreground["image"], full="skin")
+            if foreground_image is None:
+                return
+            multiply = foreground.get("multiply")
+            multiply_key, multiply_image = self.load(multiply["image"], full="skin") if multiply else (None, None)
+            if multiply and multiply_image is None:
+                return
+            if not self.canvas.find_withtag("native-skin-background"):
+                self._native_skin_backgrounds = set()
+            for asset_key, asset, frame in layers:
+                background_key = ("native-skin-background", asset_key, tuple(frame), scale)
+                if background_key in self._native_skin_backgrounds:
+                    continue
+                if background_key not in self.rasters:
+                    background_image = asset.resize((max(1, round(frame[2] * scale)), max(1, round(frame[3] * scale))),
+                                                    Image.Resampling.LANCZOS)
+                else:
+                    background_image = None
+                self.layout_raster(background_key, background_image, x + frame[0] * scale, 10 + frame[1] * scale)
+                item = self.canvas.find_all()[-1]
+                self.canvas.addtag_withtag("native-skin-background", item)
+                self.canvas.tag_lower(item)
+                self._native_skin_backgrounds.add(background_key)
+            extra_height = round(target.get("table_height_delta", 0) * scale)
+            table_rect = module.get("table", {}).get("rect")
+            split_at = (round((table_rect[1] + table_rect[3] - foreground["rect"][1]) * scale)
+                        if table_rect and extra_height > 0 else None)
+            key = ("native-module-skin", tuple((item[0], tuple(item[2])) for item in layers),
+                   foreground_key, multiply_key, tuple(rect), width, height, scale, split_at, extra_height)
+            if key not in self.rasters:
+                image = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+
+                def composite(part, dx, dy):
+                    dx, dy = round(dx), round(dy)
+                    crop = (max(0, -dx), max(0, -dy), min(part.width, width - dx), min(part.height, height - dy))
+                    if crop[0] < crop[2] and crop[1] < crop[3]:
+                        image.alpha_composite(part.crop(crop), (dx + crop[0], dy + crop[1]))
+
+                if multiply_image is not None:
+                    for _, asset, frame in layers:
+                        resized = asset.resize((max(1, round(frame[2] * scale)), max(1, round(frame[3] * scale))),
+                                               Image.Resampling.LANCZOS)
+                        composite(resized, (frame[0] - rect[0] - trim_left) * scale, (frame[1] - rect[1]) * scale)
+                    frame = multiply["rect"]
+                    pixels = multiply_image.resize((max(1, round(frame[2] * scale)), max(1, round(frame[3] * scale))),
+                                                    Image.Resampling.LANCZOS)
+                    multiply_canvas = Image.new("RGBA", image.size, (255, 255, 255, 0))
+                    multiply_canvas.paste(pixels, (round((frame[0] - rect[0] - trim_left) * scale),
+                                                   round((frame[1] + target.get("delta_y", 0) - rect[1]) * scale)))
+                    blended = ImageChops.multiply(image.convert("RGB"), multiply_canvas.convert("RGB")).convert("RGBA")
+                    blended.putalpha(multiply_canvas.getchannel("A"))
+                    image.alpha_composite(blended)
+                frame = foreground["rect"]
+                native = foreground_image.resize((max(1, round(frame[2] * scale)), max(1, round(frame[3] * scale))),
+                                                  Image.Resampling.LANCZOS)
+                dx = (frame[0] - rect[0] - trim_left) * scale
+                dy = (frame[1] + target.get("delta_y", 0) - rect[1]) * scale
+                if split_at is not None and 0 < split_at < native.height:
+                    composite(native.crop((0, 0, native.width, split_at)), dx, dy)
+                    composite(native.crop((0, split_at, native.width, native.height)), dx, dy + split_at + extra_height)
+                else:
+                    composite(native, dx, dy)
+            else:
+                image = None
+            self.layout_raster(key, image, left, top)
+            return
         self.panel(left, top, width, height, self.color(module.get("fill"), "#ffffff"))
         if clean is None or module.get("generated"):
             return
@@ -938,7 +1057,14 @@ class PreviewPane(ttk.Frame):
     def table_raster(self, matrix, table, x, scale):
         region, plan, style = table["region"], table["plan"], table.get("spec", {})
         width, height = max(1, round(region[2])), max(1, round(plan["height"]))
-        key = (("table", repr(matrix)), str(plan), str(style), scale)
+        cover = table.get("cover_rect")
+        if cover:
+            self.panel(x + cover[0] * scale, 10 + cover[1] * scale, cover[2] * scale, cover[3] * scale, "#ffffff")
+        mask_path = table.get("mask")
+        mask_key, mask_image = self.load(mask_path, full="skin") if mask_path else (None, None)
+        if mask_path and mask_image is None and mask_key in self.pending:
+            return
+        key = (("table", repr(matrix)), str(plan), str(style), scale, mask_key)
         if key not in self.rasters:
             image = Image.new("RGBA", (width, height), "white")
             draw = ImageDraw.Draw(image)
@@ -965,6 +1091,13 @@ class PreviewPane(ttk.Frame):
                     self.mixed_text(draw, value or " ", left + cell_width / 2, top + band_h / 2 + px * .33,
                                     px, header_text_color if row_index == 0 else text_color, "center")
                     left += cell_width
+            if mask_image is not None:
+                alpha = mask_image.getchannel("A").resize((width, height), Image.Resampling.LANCZOS)
+            else:
+                # Old profiles had a rectangular preview. New imports capture
+                # the actual Photoshop base/shape mask, including version-specific corners.
+                alpha = Image.new("L", (width, height), 255)
+            image.putalpha(alpha)
             image = image.resize((max(1, round(width * scale)), max(1, round(height * scale))), Image.Resampling.LANCZOS)
         else:
             image = None
@@ -1069,10 +1202,13 @@ class PreviewPane(ttk.Frame):
         size_note = info.get("尺码备注")
         try:
             geometry = plan_layout(profile, max(1, len(colors)), tables, scene_count,
-                                   has_hero=bool(hero), has_brand=bool(brand), size_note=size_note)
+                                   has_hero=bool(hero), has_brand=bool(brand), size_note=size_note,
+                                   table_issues=self.state_data[15] if len(self.state_data) > 15 else None)
         except ValueError as error:
             self.text(x + 12, 30, str(error), fill="#a84a35", width=page - 24)
             return 180
+        self.last_geometry = geometry
+        self.table_status = geometry.get("table_status", {})
         scale = page / geometry["canvas"]["width"]
         clean = None
         if profile.get("clean_preview"):
@@ -1088,6 +1224,11 @@ class PreviewPane(ttk.Frame):
             module, target = by_role.get(role), targets.get(role)
             if module and target and target.get("visible", True) and target["rect"][3] > 0:
                 self.module_skin(module, target, profile, clean, x, scale, boundaries[role])
+        for omitted in geometry.get("omitted_tables", {}).values():
+            if not omitted.get("retained_content"):
+                continue
+            for left, top, width, height in omitted.get("clear_rects", []):
+                self.panel(x + left * scale, 10 + top * scale, width * scale, height * scale, "#ffffff")
         self.sections["hero"] = 0
         for role, key in (("product", "product"), ("colors", "product"), ("size_table", "sizes"), ("scenes", "scenes")):
             module = targets.get(role)
@@ -1172,7 +1313,9 @@ class PreviewPane(ttk.Frame):
             left, top, width, height = x + rect[0] * scale, 10 + rect[1] * scale, rect[2] * scale, rect[3] * scale
             self.picture(left, top, width, height, source, crop=crop,
                          mask=slot.get("mask"), frame_size=rect[2:4],
-                         label=f"{self.slot_name((kind, key))} · 未绑定", background=None,
+                         label=f"{self.slot_name((kind, key))} · 未绑定",
+                         background="#ffffff" if slot_id == "hero" and slot.get("generated") else None,
+                         visible_subject=slot_id == "hero" and product_hero,
                          foreground=slot.get("foreground"))
             self.mark_slot(kind, key, left, top, width, height)
         self.paint_decorations(targets, geometry["canvas"], x, scale)
