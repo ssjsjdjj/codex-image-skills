@@ -105,8 +105,28 @@ function applyManifestGeometry(doc, job) {
     for (i = 0; i < stretches.length; i++) {
         var stretch = stretches[i];
         var module = geometry.modules[stretch.role];
-        if (!module) continue;
+        if (!module || !module.visible) continue;
         manifestResizeBackground(findLayer(doc, stretch.path), module.height_delta || 0);
+    }
+}
+
+function manifestApplyCompactHelperGeometry(doc, job) {
+    if (!manifestCompactEnabled(job)) return;
+    var target = job.geometry.modules.size_table;
+    var helpers = target && target.visible && target.helper_layout;
+    if (!helpers) return;
+    var measurement = job.profile.view_slots.measurement;
+    if (measurement && helpers.measurement_rect) {
+        var illustration = findLayer(doc, measurement.path);
+        manifestMoveLayer(illustration, helpers.measurement_rect[1] - manifestRect(illustration)[1]);
+    }
+    // Apply the same targets for a skipped table's helpers and for a valid
+    // short table's following note. Replacing text uses geometry.size_note;
+    // inherited native text moves to those identical targets here.
+    var lines = helpers.note_lines || [];
+    for (var i = 0; i < lines.length; i++) {
+        var layer = findLayer(doc, lines[i].path);
+        manifestMoveLayer(layer, lines[i].rect[1] - manifestRect(layer)[1]);
     }
 }
 
@@ -131,6 +151,7 @@ function manifestDecorationsVisibility(doc, job, verify) {
         }
         if (!path) continue;
         var matches = manifestResolvePaths(doc, path);
+        if (verify && !matches.length && manifestCompactPathWasRemoved(job, path)) continue;
         if (matches.length !== 1) throw new Error("未定位母版绿线装饰：" + path.join(" / "));
         var remove = false;
         for (j = 0; j < hidden.length; j++) if (hidden[j] === entry.id) remove = true;
@@ -236,12 +257,130 @@ function manifestRenderColors(doc, job, fonts) {
     }
 }
 
+function manifestTableIsRendered(job, source) {
+    if (!source.table) return false;
+    var target = job.geometry.modules[source.role];
+    return Boolean(target && target.visible && target.table_visible !== false &&
+        job.geometry.tables[source.table.key] && job.tables[source.table.key]);
+}
+
+function manifestTableLayoutError(key, message) {
+    return new Error("[TABLE_LAYOUT:" + key + "] " + message);
+}
+
+function manifestKnownTableLayoutError(error) {
+    var message = String(error.message || error);
+    return message.indexOf("列内容超出本区可读宽度") >= 0 ||
+        message.indexOf("列文字过密") >= 0 || message.indexOf("行文字超出行高") >= 0 ||
+        message.indexOf("表格文字过宽：") >= 0 ||
+        message.indexOf("表格单元格请填写单行内容") >= 0;
+}
+
+function manifestTableProtectedPaths(job) {
+    var paths = [];
+    var measurement = job.profile.view_slots.measurement;
+    if (measurement && measurement.path) paths.push(measurement.path);
+    var note = job.profile.size_note;
+    if (note) for (var n = 0; n < note.lines.length; n++) paths.push(note.lines[n].path);
+    return paths;
+}
+
+function manifestTableBaseIsProtected(job, path) {
+    var retained = manifestTableProtectedPaths(job);
+    for (var i = 0; i < retained.length; i++) {
+        if (manifestPrefix(retained[i], path) || manifestPrefix(path, retained[i])) return true;
+    }
+    return false;
+}
+
+function manifestClearOmittedTable(doc, job, source) {
+    var target = job.geometry.modules[source.role];
+    var key = source.table.key;
+    if (source.table.base_path && !manifestTableBaseIsProtected(job, source.table.base_path)) {
+        var bases = manifestResolvePaths(doc, source.table.base_path);
+        for (var b = 0; b < bases.length; b++) bases[b].visible = false;
+    }
+    // Shared sizing groups can also contain the measurement illustration and
+    // editable note. Only the agreed table rectangles are cleared in that case.
+    var omission = job.geometry.omitted_tables && job.geometry.omitted_tables[key];
+    if (!target || !target.visible || !omission || !omission.clear_rects.length) return;
+    var parent = findLayer(doc, source.table.parent_path || source.path);
+    var cover = parent.layerSets.add();
+    cover.name = "表格留白 · " + key;
+    for (var i = 0; i < omission.clear_rects.length; i++) {
+        var rect = omission.clear_rects[i];
+        rectangle(doc, cover, "清空原表格 " + (i + 1), rect[0], rect[1], rect[2], rect[3], [255, 255, 255], 0);
+    }
+}
+
+function manifestCheckRenderedTable(doc, table, matrix, resolved, key) {
+    var region = resolved.region;
+    var plan = resolved.plan;
+    for (var r = 0; r < matrix.length; r++) {
+        var row = findLayer(table, [r === 0 ? "表头" : "第 " + r + " 行"]);
+        var left = region[0];
+        var top = r === 0 ? region[1] : region[1] + plan.header + (r - 1) * plan.row;
+        var height = r === 0 ? plan.header : plan.row;
+        for (var c = 0; c < matrix[r].length; c++) {
+            var cell = findLayer(row, ["第 " + (c + 1) + " 列"]);
+            if (cell.kind !== LayerKind.TEXT || cell.textItem.contents !== (matrix[r][c] || " ")) {
+                throw new Error("表格内容核验失败：" + key + " 第 " + (r + 1) + " 行，第 " + (c + 1) + " 列");
+            }
+            if (/\S/.test(String(matrix[r][c] || ""))) {
+                var actual = box(cell);
+                if (cell.textItem.size.as("pt") * doc.resolution / 72 < 15.5 ||
+                    actual[0] < left - 1 || actual[2] > left + plan.widths[c] + 1 ||
+                    actual[1] < top + 1 || actual[3] > top + height - 1) {
+                    throw manifestTableLayoutError(key, "第 " + (r + 1) + " 行，第 " + (c + 1) + " 列文字超出可读单元格范围。");
+                }
+            }
+            left += plan.widths[c];
+        }
+    }
+}
+
+function manifestVerifyOmittedTable(doc, job, source) {
+    var key = source.table.key;
+    var target = job.geometry.modules[source.role];
+    var currentPath = (source.table.parent_path || source.path).concat([key + "（当前数据）"]);
+    if (manifestResolvePaths(doc, currentPath).length) throw new Error("已跳过的表格仍含当前数据：" + key);
+    var oldPaths = source.table.data_paths || [];
+    for (var p = 0; p < oldPaths.length; p++) {
+        if (manifestResolvePaths(doc, oldPaths[p]).length) throw new Error("已跳过的表格仍含母版旧数据：" + key);
+    }
+    if (source.table.base_path && !manifestTableBaseIsProtected(job, source.table.base_path) &&
+        manifestVisiblePath(doc, source.table.base_path)) throw new Error("已跳过的表格底板仍可见：" + key);
+    var status = job.geometry.table_status && job.geometry.table_status[key];
+    var result = {state: status ? status.state : "absent", reason: status ? status.reason : "",
+        emitted: false, old_data_removed: true, matrix: null, bounds_px: null};
+    var omission = job.geometry.omitted_tables && job.geometry.omitted_tables[key];
+    result.clear_rects = omission ? omission.clear_rects : [];
+    if (target && target.visible && omission && omission.clear_rects.length) {
+        var parent = findLayer(doc, source.table.parent_path || source.path);
+        var cover = findLayer(parent, ["表格留白 · " + key]);
+        if (!cover.visible) throw new Error("已跳过表格的留白未显示：" + key);
+        for (var c = 0; c < omission.clear_rects.length; c++) {
+            var layer = findLayer(cover, ["清空原表格 " + (c + 1)]);
+            var actual = box(layer);
+            var rect = omission.clear_rects[c];
+            if (!layer.visible || Math.abs(actual[0] - rect[0]) > 1 || Math.abs(actual[1] - rect[1]) > 1 ||
+                Math.abs(actual[2] - rect[0] - rect[2]) > 1 || Math.abs(actual[3] - rect[1] - rect[3]) > 1) {
+                throw new Error("已跳过表格的留白位置核验失败：" + key);
+            }
+        }
+    }
+    return result;
+}
+
 function manifestRenderTables(doc, job, fonts) {
     for (var i = 0; i < job.profile.modules.length; i++) {
         var source = job.profile.modules[i];
         if (!source.table) continue;
         var resolved = job.geometry.tables[source.table.key];
-        if (!resolved || !job.geometry.modules[source.role].visible) continue;
+        if (!manifestTableIsRendered(job, source)) {
+            manifestClearOmittedTable(doc, job, source);
+            continue;
+        }
         var parent = findLayer(doc, source.table.parent_path || source.path);
         var table = parent.layerSets.add();
         table.name = source.table.key + "（当前数据）";
@@ -249,8 +388,9 @@ function manifestRenderTables(doc, job, fonts) {
         var base;
         if (source.table.cover_rect) {
             var dy = job.geometry.modules[source.role].delta_y || 0;
-            var cover = manifestShiftRect(source.table.cover_rect, dy);
-            rectangle(doc, table, "覆盖原表格数据", cover[0], cover[1], cover[2], Math.max(cover[3], resolved.plan.height), [255, 255, 255], 0);
+            var cover = resolved.cover_rect || manifestShiftRect(source.table.cover_rect, dy);
+            var coverHeight = resolved.cover_rect ? cover[3] : Math.max(cover[3], resolved.plan.height);
+            if (coverHeight > 0) rectangle(doc, table, "覆盖原表格数据", cover[0], cover[1], cover[2], coverHeight, [255, 255, 255], 0);
         }
         if (source.table.base_path) {
             base = findLayer(doc, source.table.base_path);
@@ -265,8 +405,16 @@ function manifestRenderTables(doc, job, fonts) {
             bounds = box(base);
         }
         base.translate(UnitValue(region[0] - bounds[0], "px"), UnitValue(region[1] - bounds[1], "px"));
-        drawPantsDetailTable(doc, table, base, job.tables[source.table.key],
-            [region[0], region[1], region[0] + region[2], region[1] + region[3]], resolved.plan, resolved.spec, fonts);
+        try {
+            drawPantsDetailTable(doc, table, base, job.tables[source.table.key],
+                [region[0], region[1], region[0] + region[2], region[1] + region[3]], resolved.plan, resolved.spec, fonts);
+        } catch (tableError) {
+            if (manifestKnownTableLayoutError(tableError)) {
+                throw manifestTableLayoutError(source.table.key, tableError.message);
+            }
+            throw tableError;
+        }
+        manifestCheckRenderedTable(doc, table, job.tables[source.table.key], resolved, source.table.key);
     }
 }
 
@@ -356,13 +504,60 @@ function manifestRenderViews(doc, job, heroGroup) {
             }
             continue;
         }
-        var item = key === "hero" ? job.hero : key === "brand" ? job.brand : job.scenes[parseInt(key.split("_")[1], 10) - 1];
+        // Photoshop 2020's ExtendScript can resolve the nested conditional here
+        // through the brand branch even for "hero". Keep these choices explicit.
+        var item;
+        if (key === "hero") item = job.hero;
+        else if (key === "brand") item = job.brand;
+        else item = job.scenes[parseInt(key.split("_")[1], 10) - 1];
         if (!item) continue;
         var slot = manifestSlotFrame(doc, job, key, heroGroup);
         workbenchPicture(doc, slot.parent, item, "当前照片 · " + key, target.rect, slot.frame, key);
         count++;
     }
     return count;
+}
+
+function manifestVerifyPhotoSlots(doc, job) {
+    var verified = [];
+    for (var key in job.profile.view_slots) {
+        var source = job.profile.view_slots[key];
+        var target = job.geometry.view_slots[key];
+        if (!target || !target.visible) continue;
+        var item = null;
+        if (key === "measurement") item = job.measurement;
+        else if (key === "hero") item = job.hero;
+        else if (key === "brand") item = job.brand;
+        else if (key.indexOf("scene_") === 0) item = job.scenes[parseInt(key.split("_")[1], 10) - 1];
+        // An unbound measurement inherits its native illustration instead.
+        if (key === "measurement" && !item) continue;
+        if (!item) throw new Error("可见照片图位缺少已确认素材：" + key);
+        var parentPath;
+        if (source.path) parentPath = source.path.slice(0, -1);
+        else if (key === "hero") parentPath = ["当前主视觉"];
+        else parentPath = manifestFindModule(job.profile, manifestRoleForSlot(key)).path;
+        var path = parentPath.concat(["当前照片 · " + key]);
+        var layer = findLayer(doc, path);
+        if (layer.kind !== LayerKind.SMARTOBJECT || !manifestVisiblePath(doc, path) || layer.opacity <= 0) {
+            throw new Error("重开后照片图位不可见或不是智能对象：" + key);
+        }
+        var rect = target.rect, bounds = box(layer);
+        if (bounds[2] <= rect[0] || bounds[0] >= rect[0] + rect[2] ||
+                bounds[3] <= rect[1] || bounds[1] >= rect[1] + rect[3]) {
+            throw new Error("重开后照片没有落入对应图框：" + key);
+        }
+        if (key !== "measurement") {
+            var framePath;
+            if (source.path) framePath = source.path;
+            else framePath = parentPath.concat(["当前图框 · " + key]);
+            if (!manifestVisiblePath(doc, framePath) || !layer.grouped) {
+                throw new Error("重开后照片的图框不可见或剪贴关系丢失：" + key);
+            }
+        }
+        verified.push({slot: key, path: path, visible: true, embedded: true,
+                       bounds_px: bounds, frame: rect.slice()});
+    }
+    return verified;
 }
 
 function manifestClipSceneModule(doc, job) {
@@ -406,6 +601,181 @@ function manifestClipSceneModule(doc, job) {
     }
 }
 
+function manifestCompactEnabled(job) {
+    return job.profile.compact_version === 1;
+}
+
+function manifestCompactPathWasRemoved(job, path) {
+    var removed = job.output_pruned_paths || [];
+    for (var i = 0; i < removed.length; i++) if (manifestPrefix(path, removed[i])) return true;
+    return false;
+}
+
+function manifestCompactPathsRelated(path, protectedPaths) {
+    for (var i = 0; i < protectedPaths.length; i++) {
+        if (manifestPrefix(path, protectedPaths[i]) || manifestPrefix(protectedPaths[i], path)) return true;
+    }
+    return false;
+}
+
+function manifestCompactIsRequiredAncestor(path, protectedPaths) {
+    for (var i = 0; i < protectedPaths.length; i++) if (manifestPrefix(protectedPaths[i], path)) return true;
+    return false;
+}
+
+function manifestCompactRemovePath(doc, job, path) {
+    if (!path || !path.length) return;
+    var matches = manifestResolvePaths(doc, path);
+    if (!matches.length) return;
+    for (var i = matches.length - 1; i >= 0; i--) matches[i].remove();
+    job.output_pruned_paths.push(path.slice());
+}
+
+function manifestCompactProtectedPaths(job) {
+    var paths = [];
+    for (var i = 0; i < job.profile.modules.length; i++) {
+        var module = job.profile.modules[i];
+        var target = job.geometry.modules[module.role];
+        if (target && target.visible) paths = paths.concat(module.move_paths || (module.path ? [module.path] : []));
+    }
+    var measurement = job.profile.view_slots.measurement;
+    if (measurement && job.geometry.view_slots.measurement && job.geometry.view_slots.measurement.visible) paths.push(measurement.path);
+    var note = job.profile.size_note;
+    if (note && job.geometry.modules.size_table && job.geometry.modules.size_table.visible) {
+        for (i = 0; i < note.lines.length; i++) paths.push(note.lines[i].path);
+    }
+    if (job.profile.product_attributes) paths.push(job.profile.product_attributes.path);
+    return paths;
+}
+
+function manifestCompactSceneTail(parent, path, bottom, protectedPaths, doc, job) {
+    if (parent.typename !== "LayerSet") return;
+    for (var i = parent.layers.length - 1; i >= 0; i--) {
+        if (i >= parent.layers.length) continue;
+        var layer = parent.layers[i];
+        var childPath = path.concat([layer.name]);
+        var retained = manifestCompactPathsRelated(childPath, protectedPaths) || /^当前照片 · /.test(layer.name);
+        if (!retained) {
+            var bounds = box(layer);
+            if (bounds[1] >= bottom - .5) {
+                manifestCompactRemovePath(doc, job, childPath);
+                continue;
+            }
+        }
+        if (layer.typename === "LayerSet") {
+            manifestCompactSceneTail(layer, childPath, bottom, protectedPaths, doc, job);
+            if (!layer.layers.length && !retained) manifestCompactRemovePath(doc, job, childPath);
+        }
+    }
+}
+
+function manifestCompactRemoveEmptyGroups(parent, path, protectedPaths, doc, job) {
+    for (var i = parent.layers.length - 1; i >= 0; i--) {
+        if (i >= parent.layers.length) continue;
+        var layer = parent.layers[i];
+        if (layer.typename !== "LayerSet") continue;
+        var childPath = path.concat([layer.name]);
+        manifestCompactRemoveEmptyGroups(layer, childPath, protectedPaths, doc, job);
+        if (!layer.layers.length && !manifestCompactIsRequiredAncestor(childPath, protectedPaths)) {
+            manifestCompactRemovePath(doc, job, childPath);
+        }
+    }
+}
+
+function manifestPruneCompactOutput(doc, job) {
+    if (!manifestCompactEnabled(job)) return;
+    job.output_pruned_paths = [];
+    var protectedPaths = manifestCompactProtectedPaths(job);
+    var i, p, module, target, paths;
+    for (i = 0; i < job.profile.modules.length; i++) {
+        module = job.profile.modules[i];
+        target = job.geometry.modules[module.role];
+        if (target && target.visible) continue;
+        paths = module.move_paths || (module.path ? [module.path] : []);
+        for (p = 0; p < paths.length; p++) {
+            if (!manifestCompactPathsRelated(paths[p], protectedPaths)) manifestCompactRemovePath(doc, job, paths[p]);
+        }
+    }
+    // The original data has already been deleted. Do not leave independent old
+    // table containers, unused picture frames, or off-page scene groups hidden.
+    for (i = 0; i < job.profile.modules.length; i++) {
+        module = job.profile.modules[i];
+        if (module.table && !manifestTableIsRendered(job, module) && module.table.base_path &&
+                !manifestTableBaseIsProtected(job, module.table.base_path)) {
+            manifestCompactRemovePath(doc, job, module.table.base_path);
+        }
+    }
+    var activeScenePaths = [];
+    for (var key in job.profile.view_slots) {
+        if (key.indexOf("scene_") !== 0) continue;
+        var slot = job.profile.view_slots[key];
+        target = job.geometry.view_slots[key];
+        if (slot.path && target && target.visible) activeScenePaths.push(slot.path);
+    }
+    for (key in job.profile.view_slots) {
+        if (key.indexOf("scene_") !== 0) continue;
+        slot = job.profile.view_slots[key];
+        target = job.geometry.view_slots[key];
+        if (slot.path && (!target || !target.visible) && !manifestCompactPathsRelated(slot.path, activeScenePaths)) {
+            manifestCompactRemovePath(doc, job, slot.path);
+        }
+    }
+    var scene = manifestFindModule(job.profile, "scenes");
+    target = job.geometry.modules.scenes;
+    if (scene && target && target.visible && scene.path) {
+        var sceneRoots = manifestResolvePaths(doc, scene.path);
+        for (i = 0; i < sceneRoots.length; i++) {
+            manifestCompactSceneTail(sceneRoots[i], scene.path, target.rect[1] + target.rect[3], activeScenePaths, doc, job);
+        }
+    }
+    var note = job.profile.size_note;
+    if (note && job.size_note !== null && job.size_note !== undefined) {
+        for (i = 0; i < note.lines.length; i++) manifestCompactRemovePath(doc, job, note.lines[i].path);
+    }
+    var measurement = job.profile.view_slots.measurement;
+    if (measurement && job.measurement) manifestCompactRemovePath(doc, job, measurement.path);
+    manifestCompactRemoveEmptyGroups(doc, [], protectedPaths, doc, job);
+}
+
+function manifestVerifyCompactContent(doc, job) {
+    if (!manifestCompactEnabled(job)) return null;
+    var allowed = ["header", "hero", "product", "colors", "size_table", "quick_size", "try_on", "measurement_method", "scenes"];
+    var roles = [];
+    var intervals = [];
+    for (var role in job.geometry.modules) {
+        var target = job.geometry.modules[role];
+        if (!target.visible) continue;
+        var accepted = false;
+        for (var a = 0; a < allowed.length; a++) if (allowed[a] === role) accepted = true;
+        if (!accepted) throw new Error("精简成品仍包含未保留模块：" + role);
+        roles.push(role);
+        intervals.push([target.rect[1], target.rect[1] + target.rect[3]]);
+    }
+    var removed = (job.output_pruned_paths || []).slice();
+    var summary = job.profile.compact_summary || {};
+    removed = removed.concat(summary.removed_paths || []);
+    for (var i = 0; i < removed.length; i++) {
+        if (manifestResolvePaths(doc, removed[i]).length) throw new Error("精简成品仍含已排除图层：" + removed[i].join(" / "));
+    }
+    intervals.sort(function (a, b) { return a[0] - b[0]; });
+    var first = intervals.length ? intervals[0][0] : 0;
+    var bottom = intervals.length ? intervals[0][1] : 0;
+    var maxGap = 0;
+    for (i = 1; i < intervals.length; i++) {
+        maxGap = Math.max(maxGap, intervals[i][0] - bottom);
+        bottom = Math.max(bottom, intervals[i][1]);
+    }
+    var height = doc.height.as("px");
+    if (Math.abs(height - job.geometry.canvas.height) > .5) throw new Error("精简成品画布高度与预览不一致");
+    if (first > 80 || maxGap > 80.5 || height - bottom > 80.5 || bottom > height + .5) {
+        throw new Error("精简成品存在超出约定的空白：页首 " + first + "、模块间 " + maxGap + "、页尾 " + (height - bottom) + " px");
+    }
+    return {version: 1, kept_roles: roles, removed_layer_paths: removed,
+        actual_canvas_height: height, planned_canvas_height: job.geometry.canvas.height,
+        first_module_top: first, max_inter_module_gap: maxGap, bottom_margin: height - bottom,
+        no_excluded_layers: true};
+}
+
 function manifestSpacing(first, second, label) {
     if (!first || !second) return null;
     var gap = Math.max(second[0] - first[2], first[0] - second[2], second[1] - first[3], first[1] - second[3]);
@@ -413,17 +783,36 @@ function manifestSpacing(first, second, label) {
     return gap;
 }
 
+function manifestTableSpacing(first, second, label, key) {
+    try {
+        return manifestSpacing(first, second, label);
+    } catch (error) {
+        throw manifestTableLayoutError(key, error.message);
+    }
+}
+
 function manifestVerify(doc, job, expectedPhotos) {
     manifestDecorationsVisibility(doc, job, true);
     var attributesEditable = manifestRenderProductAttributes(doc, job, true);
     var sizeBounds = {size_table: null, measurement: null, size_note: null};
     var sizeNoteEditable = false;
+    var tableVerification = {};
+    var statuses = job.geometry.table_status || {};
+    for (var tableKey in statuses) {
+        tableVerification[tableKey] = {state: statuses[tableKey].state, reason: statuses[tableKey].reason,
+            emitted: false, matrix: null, bounds_px: null};
+    }
     var note = job.profile.size_note;
     var sizeTarget = job.geometry.modules.size_table;
     if (note && sizeTarget && sizeTarget.visible) {
-        var originalNote = findLayer(doc, note.lines[0].path);
         var inherited = job.size_note === null || job.size_note === undefined;
+        var originalNote = null;
+        if (!manifestCompactEnabled(job) || inherited) originalNote = findLayer(doc, note.lines[0].path);
         for (var n = 0; n < note.lines.length; n++) {
+            if (manifestCompactEnabled(job) && !inherited) {
+                if (manifestResolvePaths(doc, note.lines[n].path).length) throw new Error("成品仍含替换前的尺码备注");
+                continue;
+            }
             var originalLine = findLayer(doc, note.lines[n].path);
             if (originalLine.visible !== inherited) {
                 throw new Error("母版尺码备注显示状态核验失败");
@@ -438,7 +827,8 @@ function manifestVerify(doc, job, expectedPhotos) {
             }
         }
         if (!inherited && job.size_note) {
-            var insertedNote = findLayer(originalNote.parent, ["当前尺码备注"]);
+            var noteParent = originalNote ? originalNote.parent : findLayer(doc, note.lines[0].path.slice(0, -1));
+            var insertedNote = findLayer(noteParent, ["当前尺码备注"]);
             if (!insertedNote.visible || insertedNote.kind !== LayerKind.TEXT ||
                 insertedNote.textItem.contents.replace(/\r\n?/g, "\n") !== job.geometry.size_note.lines.join("\n")) {
                 throw new Error("尺码备注未以可编辑文字保存");
@@ -449,13 +839,20 @@ function manifestVerify(doc, job, expectedPhotos) {
     }
     var measurement = job.profile.view_slots.measurement;
     if (measurement) {
-        var nativeMeasurement = findLayer(doc, measurement.path);
         var measurementTarget = job.geometry.view_slots.measurement;
         var showOriginal = Boolean(measurementTarget && measurementTarget.visible && !job.measurement);
-        if (nativeMeasurement.visible !== showOriginal) throw new Error("母版测量示意图显示状态核验失败");
-        if (showOriginal) sizeBounds.measurement = box(nativeMeasurement);
+        var measurementParent;
+        if (manifestCompactEnabled(job) && job.measurement) {
+            if (manifestResolvePaths(doc, measurement.path).length) throw new Error("成品仍含替换前的测量示意图");
+            if (measurementTarget && measurementTarget.visible) measurementParent = findLayer(doc, measurement.path.slice(0, -1));
+        } else {
+            var nativeMeasurement = findLayer(doc, measurement.path);
+            measurementParent = nativeMeasurement.parent;
+            if (nativeMeasurement.visible !== showOriginal) throw new Error("母版测量示意图显示状态核验失败");
+            if (showOriginal) sizeBounds.measurement = box(nativeMeasurement);
+        }
         if (measurementTarget && measurementTarget.visible && job.measurement) {
-            var insertedMeasurement = findLayer(nativeMeasurement.parent, ["当前照片 · measurement"]);
+            var insertedMeasurement = findLayer(measurementParent, ["当前照片 · measurement"]);
             var mb = box(insertedMeasurement);
             var mr = measurementTarget.rect;
             if (!insertedMeasurement.visible || insertedMeasurement.kind !== LayerKind.SMARTOBJECT || mb[0] < mr[0] - 2 || mb[1] < mr[1] - 2 ||
@@ -481,14 +878,21 @@ function manifestVerify(doc, job, expectedPhotos) {
         layer = findLayer(colors, ["当前色名 · " + job.products[i].label]);
         if (layer.textItem.contents.replace(/\r/g, "") !== job.products[i].label) throw new Error("色名与商品图对应错误");
     }
-    if (verifyEmbedded(doc, /^当前照片 · /) !== expectedPhotos) throw new Error("实际照片图位数量不符");
+    var photoSlots = manifestVerifyPhotoSlots(doc, job);
+    if (expectedPhotos !== photoSlots.length || verifyEmbedded(doc, /^当前照片 · /) !== photoSlots.length) {
+        throw new Error("实际照片图位数量与已确认绑定不符");
+    }
     for (i = 0; i < job.profile.modules.length; i++) {
         var source = job.profile.modules[i];
         var target = job.geometry.modules[source.role];
+        if (source.table && !manifestTableIsRendered(job, source)) {
+            tableVerification[source.table.key] = manifestVerifyOmittedTable(doc, job, source);
+        }
         if (!target || !target.visible) continue;
         for (var j = 0; j < source.titles.length; j++) {
             var title = source.titles[j];
             if (manifestExcluded(title.path, job.profile.omitted_paths)) continue;
+            if (manifestCompactEnabled(job) && manifestCompactPathWasRemoved(job, title.path)) continue;
             if (title.static_only) continue;
             layer = findLayer(doc, title.path);
             if (layer.kind !== LayerKind.TEXT || layer.textItem.contents !== title.text) {
@@ -499,30 +903,30 @@ function manifestVerify(doc, job, expectedPhotos) {
                 throw new Error("母版原标题样式被改变：" + title.path.join(" / "));
             }
         }
-        if (!source.table || !job.tables[source.table.key]) continue;
+        if (!manifestTableIsRendered(job, source)) continue;
         var parent = findLayer(doc, source.table.parent_path || source.path);
         var table = findLayer(parent, [source.table.key + "（当前数据）"]);
         if (source.role === "size_table") sizeBounds.size_table = box(table);
         var matrix = job.tables[source.table.key];
-        for (var r = 0; r < matrix.length; r++) {
-            var row = findLayer(table, [r === 0 ? "表头" : "第 " + r + " 行"]);
-            for (var c = 0; c < matrix[r].length; c++) {
-                layer = findLayer(row, ["第 " + (c + 1) + " 列"]);
-                if (layer.kind !== LayerKind.TEXT || layer.textItem.contents !== (matrix[r][c] || " ")) {
-                    throw new Error("表格内容核验失败：" + source.table.key);
-                }
-            }
-        }
+        manifestCheckRenderedTable(doc, table, matrix, job.geometry.tables[source.table.key], source.table.key);
+        tableVerification[source.table.key] = {state: "render", reason: "", emitted: true,
+            matrix: matrix, rows: matrix.length - 1, columns: matrix[0].length,
+            bounds_px: box(table), region: job.geometry.tables[source.table.key].region,
+            editable: true, plan: job.geometry.tables[source.table.key].plan};
     }
     var verification = {
+        photo_slots: photoSlots,
         bounds_px: sizeBounds,
         clearance_px: {
-            table_measurement: manifestSpacing(sizeBounds.size_table, sizeBounds.measurement, "尺码表和量体图"),
+            table_measurement: manifestTableSpacing(sizeBounds.size_table, sizeBounds.measurement, "尺码表和量体图", "03选尺码"),
             measurement_note: manifestSpacing(sizeBounds.measurement, sizeBounds.size_note, "量体图和尺码备注"),
-            table_note: manifestSpacing(sizeBounds.size_table, sizeBounds.size_note, "尺码表和尺码备注")
+            table_note: manifestTableSpacing(sizeBounds.size_table, sizeBounds.size_note, "尺码表和尺码备注", "03选尺码")
         },
         size_note_editable: sizeNoteEditable,
-        product_attributes_editable: attributesEditable
+        product_attributes_editable: attributesEditable,
+        tables: tableVerification,
+        compact_content: manifestVerifyCompactContent(doc, job),
+        compact_size_helpers_collapsed: Boolean(sizeTarget && sizeTarget.helper_layout)
     };
     var method = manifestFindModule(job.profile, "measurement_method");
     if (method && job.geometry.modules.measurement_method.visible) {
@@ -535,7 +939,7 @@ function manifestVerify(doc, job, expectedPhotos) {
             var methodRect = manifestUnion(rectangles);
             var methodBounds = [methodRect[0], methodRect[1], methodRect[0] + methodRect[2], methodRect[1] + methodRect[3]];
             verification.bounds_px.measurement_method = methodBounds;
-            verification.clearance_px.table_method = manifestSpacing(sizeBounds.size_table, methodBounds, "尺码表和测量方法");
+            verification.clearance_px.table_method = manifestTableSpacing(sizeBounds.size_table, methodBounds, "尺码表和测量方法", "03选尺码");
             verification.clearance_px.note_method = manifestSpacing(sizeBounds.size_note, methodBounds, "尺码备注和测量方法");
         }
     }
@@ -557,6 +961,7 @@ function manifestBuildSuspendedDocument() {
     manifestDecorationsVisibility(doc, job, false);
     context.stage = "应用统一布局";
     applyManifestGeometry(doc, job);
+    manifestApplyCompactHelperGeometry(doc, job);
     context.stage = "写入商品资料与颜色";
     manifestRenderFields(doc, job, fonts);
     manifestRenderProductAttributes(doc, job, false);
@@ -570,6 +975,8 @@ function manifestBuildSuspendedDocument() {
     context.photoCount = manifestRenderViews(doc, job, hero);
     doc.resizeCanvas(UnitValue(job.geometry.canvas.width, "px"), UnitValue(job.geometry.canvas.height, "px"), AnchorPosition.TOPCENTER);
     manifestClipSceneModule(doc, job);
+    context.stage = "清除未使用的模块和图位";
+    manifestPruneCompactOutput(doc, job);
 }
 
 function runManifestWorkbench(job) {

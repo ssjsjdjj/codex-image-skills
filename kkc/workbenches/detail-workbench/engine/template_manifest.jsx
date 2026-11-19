@@ -1159,6 +1159,215 @@ function exportManifestForegrounds(clean, profile, assetsFolder, reportStage) {
     profile.foreground_version = 1;
 }
 
+function manifestSkinPaths(profile) {
+    var result = [];
+    for (var i = 0; i < profile.modules.length; i++) {
+        var module = profile.modules[i];
+        var paths = module.background_paths || [];
+        for (var j = 0; j < paths.length; j++) {
+            var duplicate = false;
+            for (var k = 0; k < result.length; k++) if (manifestJson(result[k].path) === manifestJson(paths[j])) duplicate = true;
+            if (!duplicate) result.push({path: paths[j], owner_role: module.role});
+        }
+    }
+    return result;
+}
+
+function manifestSkinIntersects(a, b) {
+    return a[0] < b[0] + b[2] && a[0] + a[2] > b[0] && a[1] < b[1] + b[3] && a[1] + a[3] > b[1];
+}
+
+function saveManifestSkinBackground(doc, path, output) {
+    var layer = findLayer(doc, path);
+    var frame = manifestRect(layer);
+    var isolated;
+    try {
+        isolated = app.documents.add(UnitValue(Math.ceil(frame[2]), "px"), UnitValue(Math.ceil(frame[3]), "px"),
+            doc.resolution, "母版背景皮肤", NewDocumentMode.RGB, DocumentFill.TRANSPARENT);
+        app.activeDocument = doc;
+        var copy = layer.duplicate(isolated, ElementPlacement.PLACEATBEGINNING);
+        app.activeDocument = isolated;
+        if (copy.grouped) copy.grouped = false;
+        copy.visible = true;
+        var actual = box(copy);
+        copy.translate(UnitValue(-actual[0], "px"), UnitValue(-actual[1], "px"));
+        // A translated long-PSB gradient can carry stale raster pixels. Rebuild
+        // its native fill in this small document, then restore exact bounds.
+        var height = box(copy)[3] - box(copy)[1];
+        if (height > 1) {
+            copy.resize(100, 100 * (height + 1) / height, AnchorPosition.TOPLEFT);
+            var grown = box(copy)[3] - box(copy)[1];
+            copy.resize(100, 100 * height / grown, AnchorPosition.TOPLEFT);
+            actual = box(copy);
+            copy.translate(UnitValue(-actual[0], "px"), UnitValue(-actual[1], "px"));
+        }
+        isolated.saveAs(new File(output), new PNGSaveOptions(), true, Extension.LOWERCASE);
+    } finally {
+        if (isolated) { try { isolated.close(SaveOptions.DONOTSAVECHANGES); } catch (closeError) {} }
+        app.activeDocument = doc;
+    }
+    return frame;
+}
+
+function manifestSkinKeepPaths(parent, keep) {
+    for (var i = 0; i < parent.layers.length; i++) {
+        var layer = parent.layers[i];
+        var path = manifestPath(layer);
+        var inside = false;
+        var ancestor = false;
+        for (var j = 0; j < keep.length; j++) {
+            if (manifestPrefix(path, keep[j])) inside = true;
+            if (manifestPrefix(keep[j], path)) ancestor = true;
+        }
+        if (!inside && !ancestor) layer.visible = false;
+        else if (!inside && layer.typename === "LayerSet") manifestSkinKeepPaths(layer, keep);
+    }
+}
+
+function manifestSkinMultiplyPaths(parent, frame) {
+    var paths = [];
+    for (var i = 0; i < parent.layers.length; i++) {
+        var layer = parent.layers[i];
+        if (!layer.visible || !manifestSkinIntersects(manifestRect(layer), frame)) continue;
+        if (layer.blendMode === BlendMode.MULTIPLY) paths.push(manifestPath(layer));
+        else if (layer.typename === "LayerSet") paths = paths.concat(manifestSkinMultiplyPaths(layer, frame));
+    }
+    return paths;
+}
+
+function exportManifestSkins(doc, profile, assetsFolder, reportStage, options) {
+    options = options || {};
+    var backgrounds = manifestSkinPaths(profile);
+    for (var i = 0; i < backgrounds.length; i++) {
+        if (reportStage) reportStage("导出原生背景皮肤 " + backgrounds[i].owner_role);
+        var output = assetsFolder + "/skin-background-" + (i + 1) + ".png";
+        backgrounds[i].rect = options.foregroundOnly ? manifestRect(findLayer(doc, backgrounds[i].path)) :
+            saveManifestSkinBackground(doc, backgrounds[i].path, output);
+        if (options.foregroundOnly && !new File(output).exists) throw new Error("缺少已提取的背景皮肤：" + output);
+        backgrounds[i].image = output;
+    }
+    for (i = 0; i < profile.modules.length; i++) {
+        var module = profile.modules[i];
+        if (options.moduleRoles) {
+            var selected = false;
+            for (var selection = 0; selection < options.moduleRoles.length; selection++) {
+                if (options.moduleRoles[selection] === module.role) selected = true;
+            }
+            if (!selected) continue;
+        }
+        var assets = [];
+        for (var j = 0; j < backgrounds.length; j++) {
+            if (manifestSkinIntersects(backgrounds[j].rect, module.rect)) {
+                assets.push({image: backgrounds[j].image, rect: backgrounds[j].rect.slice(), owner_role: backgrounds[j].owner_role});
+            }
+        }
+        if (!assets.length) continue;
+        if (reportStage) reportStage("导出透明静态皮肤 " + module.role);
+        var capture, multiplyCapture;
+        try {
+            app.activeDocument = doc;
+            capture = doc.duplicate("母版透明固定皮肤", false);
+            app.activeDocument = capture;
+            manifestSkinKeepPaths(capture, module.move_paths || [module.path]);
+            var hide = [];
+            for (j = 0; j < backgrounds.length; j++) hide.push(backgrounds[j].path);
+            for (j = 0; j < profile.modules.length; j++) {
+                var tableModule = profile.modules[j];
+                if (!tableModule.table) continue;
+                if (tableModule.table.base_path) hide.push(tableModule.table.base_path);
+                hide.push((tableModule.table.parent_path || tableModule.path).concat(["旧表格内芯遮罩 · " + tableModule.role]));
+            }
+            for (j = 0; j < hide.length; j++) {
+                var matches = manifestResolvePaths(capture, hide[j]);
+                for (var k = 0; k < matches.length; k++) matches[k].visible = false;
+            }
+            var frame = manifestPageRect(module.rect);
+            var multiplyPaths = manifestSkinMultiplyPaths(capture, frame);
+            var multiplyOutput = null;
+            if (multiplyPaths.length) {
+                multiplyCapture = capture.duplicate("正片叠底固定皮肤", false);
+                app.activeDocument = multiplyCapture;
+                manifestSkinKeepPaths(multiplyCapture, multiplyPaths);
+                for (j = 0; j < multiplyPaths.length; j++) findLayer(multiplyCapture, multiplyPaths[j]).blendMode = BlendMode.NORMAL;
+                multiplyCapture.crop([UnitValue(frame[0], "px"), UnitValue(frame[1], "px"),
+                    UnitValue(frame[0] + frame[2], "px"), UnitValue(frame[1] + frame[3], "px")]);
+                multiplyOutput = assetsFolder + "/skin-multiply-" + module.role + ".png";
+                multiplyCapture.saveAs(new File(multiplyOutput), new PNGSaveOptions(), true, Extension.LOWERCASE);
+                multiplyCapture.close(SaveOptions.DONOTSAVECHANGES);
+                multiplyCapture = null;
+                app.activeDocument = capture;
+                for (j = 0; j < multiplyPaths.length; j++) findLayer(capture, multiplyPaths[j]).visible = false;
+            }
+            capture.crop([UnitValue(frame[0], "px"), UnitValue(frame[1], "px"),
+                UnitValue(frame[0] + frame[2], "px"), UnitValue(frame[1] + frame[3], "px")]);
+            output = assetsFolder + "/skin-foreground-" + module.role + ".png";
+            capture.saveAs(new File(output), new PNGSaveOptions(), true, Extension.LOWERCASE);
+            module.skin_foreground = {image: output, rect: frame};
+            if (multiplyOutput) module.skin_foreground.multiply = {image: multiplyOutput, rect: frame};
+            module.skin_backgrounds = assets;
+        } finally {
+            if (multiplyCapture) { try { multiplyCapture.close(SaveOptions.DONOTSAVECHANGES); } catch (multiplyError) {} }
+            if (capture) { try { capture.close(SaveOptions.DONOTSAVECHANGES); } catch (closeError) {} }
+            app.activeDocument = doc;
+        }
+    }
+    if (!options.foregroundOnly || options.includeTableMasks) exportManifestTableMasks(doc, profile, assetsFolder, reportStage);
+    profile.skin_version = 1;
+}
+
+function exportManifestTableMasks(doc, profile, assetsFolder, reportStage) {
+    for (var i = 0; i < profile.modules.length; i++) {
+        var module = profile.modules[i];
+        if (!module.table) continue;
+        if (reportStage) reportStage("导出表格轮廓 " + module.role);
+        var output = assetsFolder + "/mask-table-" + module.role + ".png";
+        saveManifestMask(doc, {path: module.table.base_path || null, rect: module.table.rect, radius: 12}, output);
+        module.table.mask = output;
+        module.table.mask_rect = module.table.rect.slice();
+    }
+}
+
+function repairManifestSkins(spec) {
+    var units = app.preferences.rulerUnits;
+    var dialogs = app.displayDialogs;
+    var prior = app.documents.length ? app.activeDocument : null;
+    var doc;
+    function stage(value) { templateImportStage(spec, value); }
+    try {
+        app.preferences.rulerUnits = Units.PIXELS;
+        app.displayDialogs = DialogModes.NO;
+        stage("打开皮肤提取工作副本");
+        doc = app.open(new File(spec.source));
+        doc.activeChannels = doc.componentChannels;
+        try { doc.selection.deselect(); } catch (selectionError) {}
+        if (spec.maskOnly) {
+            exportManifestTableMasks(doc, spec.profile, spec.assetsFolder, stage);
+            stage("写入原生表格轮廓资源记录");
+            manifestWrite(spec.profileOutput, spec.profile);
+            return;
+        }
+        stage("清理皮肤中的动态内容");
+        var measurement = spec.profile.view_slots.measurement;
+        if (measurement) findLayer(doc, measurement.path).visible = false;
+        hideManifestSizeNote(doc, spec.profile);
+        clearManifestData(doc, spec.profile);
+        var decorations = spec.profile.decorations || [];
+        for (var i = 0; i < decorations.length; i++) {
+            var matches = manifestResolvePaths(doc, decorations[i].path);
+            for (var j = 0; j < matches.length; j++) matches[j].visible = false;
+        }
+        exportManifestSkins(doc, spec.profile, spec.assetsFolder, stage,
+            {foregroundOnly: spec.foregroundOnly, moduleRoles: spec.moduleRoles, includeTableMasks: spec.includeTableMasks});
+        stage("写入原生皮肤资源记录");
+        manifestWrite(spec.profileOutput, spec.profile);
+    } finally {
+        if (doc) { try { doc.close(SaveOptions.DONOTSAVECHANGES); } catch (closeError) {} }
+        app.preferences.rulerUnits = units;
+        app.displayDialogs = dialogs;
+        if (prior) { try { app.activeDocument = prior; } catch (priorError) {} }
+    }
+}
+
 // These native shapes are removable photo decorations. Do not infer a removable
 // layer from a pixel color, a generic layer name or a nearby brand mark.
 var manifestDecorationPaths = [
@@ -1321,6 +1530,21 @@ function extractManifestAssets(doc, spec, classic, sections, classified) {
     bindManifestMeasurement(doc, profile, classic, setStage);
     setStage("识别尺码备注");
     bindManifestSizeNote(doc, profile);
+    if (spec.sourceIsWorking !== false && !spec.originalPreviewReady) {
+        setStage("保存原稿诊断参考");
+        snapshotReferenceDocument(doc, spec.originalPreview);
+    }
+    setStage("精简为必要页面");
+    profile = compactProfileDocument(doc, profile, setStage);
+    compactAddHeroExample(doc, profile, spec, setStage);
+    compactAddSceneExamples(doc, profile, spec, setStage);
+    return extractManifestAssetsFromProfile(doc, spec, profile, setStage);
+    } catch (error) {
+        throw new Error(stage + "失败，原第 " + error.line + " 行：" + error.message);
+    }
+}
+
+function extractManifestAssetsFromProfile(doc, spec, profile, setStage) {
     setStage("整理母版文字");
     profile.unreadable_text_paths = [];
     for (var moduleIndex = 0; moduleIndex < profile.modules.length; moduleIndex++) {
@@ -1346,10 +1570,6 @@ function extractManifestAssets(doc, spec, classic, sections, classified) {
         setStage("导出图位蒙版 " + key);
         saveManifestMask(doc, slot, slot.mask);
     }
-    if (spec.sourceIsWorking !== false && !spec.originalPreviewReady) {
-        setStage("导出完整母版原稿参考");
-        snapshotReferenceDocument(doc, spec.originalPreview);
-    }
     setStage("导出工作母版预览");
     saveManifestPage(doc, profile.working_preview);
     setStage("提取 STEP1 属性组件");
@@ -1368,6 +1588,8 @@ function extractManifestAssets(doc, spec, classic, sections, classified) {
         saveManifestPage(clean, spec.cleanPreview);
         setStage("导出图位固定前景");
         exportManifestForegrounds(clean, profile, spec.assetsFolder, setStage);
+        setStage("导出原生背景与透明固定皮肤");
+        exportManifestSkins(clean, profile, spec.assetsFolder, setStage);
     } finally {
         clean.close(SaveOptions.DONOTSAVECHANGES);
         app.activeDocument = doc;
@@ -1375,7 +1597,4 @@ function extractManifestAssets(doc, spec, classic, sections, classified) {
     setStage("写入母版布局记录");
     manifestWrite(spec.profileOutput, profile);
     return profile;
-    } catch (error) {
-        throw new Error(stage + "失败，原第 " + error.line + " 行：" + error.message);
-    }
 }

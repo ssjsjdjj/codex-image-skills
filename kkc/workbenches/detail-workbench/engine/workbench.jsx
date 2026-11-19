@@ -113,20 +113,20 @@ function reviewUploadedTemplate(spec) {
             classified.bindings = sections;
             normalized = true;
         }
-        if (normalized) {
-            templateImportStage(spec, "保存整理后的工作母版");
-            saveDetailPsb(new File(spec.normalizedOutput));
-        }
-        if (spec.output && !normalized) {
-            templateImportStage(spec, "保存工作母版");
-            saveDetailPsb(new File(spec.output));
-        }
         var profile = spec.profileOutput ? extractManifestAssets(doc, spec, classic, sections, classified) : null;
-        templateImportStage(spec, "导出页头和页尾预览");
+        // Asset extraction also applies the shared content policy. Persist that
+        // exact document, rather than the full reference from before pruning.
+        var workingOutput = spec.normalizedOutput || spec.output;
+        if (workingOutput) {
+            templateImportStage(spec, "保存精简后的工作母版");
+            saveDetailPsb(new File(workingOutput));
+        }
+        templateImportStage(spec, "导出必要区域预览");
         var footerModule = profile ? manifestFindModule(profile, "footer") : null;
         var headerModule = profile ? manifestFindModule(profile, "header") : null;
-        var footer = footerModule ? footerModule.rect : manifestRect(findLayer(doc, [classic ? "门店" : "19.门店"]));
-        var headerBottom = headerModule ? headerModule.rect[1] + headerModule.rect[3] : 550;
+        var height = doc.height.as("px");
+        var footer = footerModule ? footerModule.rect : [0, Math.max(0, height - 2), 790, 2];
+        var headerBottom = Math.min(height, headerModule ? headerModule.rect[1] + headerModule.rect[3] : 550);
         writeTemplatePreview(doc, spec.headerPreview, 0, headerBottom);
         writeTemplatePreview(doc, spec.footerPreview, Math.max(0, footer[1]),
             Math.min(doc.height.as("px"), footer[1] + footer[3]));
