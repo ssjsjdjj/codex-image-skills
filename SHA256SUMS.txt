@@ -1,6 +1,6 @@
 b798e8eb0f202da188c27a2146f1c373d57946569cdc1633602caf0b36fb6fb1  .gitattributes
 a6e6013ec054c3819638f1705293a9bf753cca699d83bbda686114dd87cf14bd  .gitignore
-4a88825b0f600686f0bc04ce4951422720af858a2c21604d32fb5fd84d729f3c  kkc/MANIFEST.json
+5bbfb637190ae4de04d2337b92cf807ef9eeb1b00edb5314ce3a7e7802f1eb90  kkc/MANIFEST.json
 7a187ef6818ba4787d6afba39a955c764077252cf26e622873f8625c4464d329  kkc/packages/ai-case-evidence.zip
 67cca77fe2b959c227d588a0a8929c495397b2a5876c7d94ce811e2089e59b85  kkc/packages/ai-product-image-diff.zip
 6f8d9ddc2e5acbb342779d8e9d3b21f3a4dcb1a02d9c3297dcc429d58e693df0  kkc/packages/chutu-baidi-touming-v2.zip
@@ -10,7 +10,7 @@ b0ce87228e5eb21b1f13efd7b1f84fed13f129faaf713c129348d67177a88067  kkc/packages/c
 32d1e86459dcefded912953f39a9d579996fe53088e7f68bd2cafb945fe877a3  kkc/packages/codex-chat-windows-to-mac-migration.zip
 b5ea88fc4aa8ead825fb3a165a51afedb3004d08ab7d000d5ff7ddf133644780  kkc/packages/detail-workbench-v0.5.11.json
 315016b06dd10ff43315364486296cb4151a87a3a0a05a345b6cad473362b7f5  kkc/packages/detail-workbench-v0.5.13.json
-67ddff2bd86536e8b5eb46b23f2c8a31bb5d2660324a24e4fe153fc6880c0b64  kkc/packages/detail-workbench-安装说明.md
+cc81cfa1290157d584895dab453d0e22ab0c3ac6457a9f5adfecbee488d3f476  kkc/packages/detail-workbench-安装说明.md
 3952e16dbc96dacdba6e5cfb7ffd79f46bbd8861ecd9e572a9d556ef1f4c1719  kkc/packages/DetailWorkbench-v0.5.11-Windows-5-templates.zip.sha256
 75c227f1f209d270706b830e62b5a105e8b5fae4d57d9b5cfdf0c5a041524725  kkc/packages/DetailWorkbench-v0.5.13-Windows-5-templates.zip.sha256
 8631fa596a1176fa0cac5e65ce9c9d39232d7102bca87fce412be0685f31fabd  kkc/packages/ecom-color-scene-swap.zip
