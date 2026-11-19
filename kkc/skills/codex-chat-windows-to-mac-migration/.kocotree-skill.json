@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "skillId": "3559a7d7-7d78-4b19-93be-b558bc401ff0",
+  "versionId": "ad5dd1ed-4b5b-484c-b7ca-4d25de9bfcba",
+  "version": "2026.8.24-1",
+  "skillName": "codex-chat-windows-to-mac-migration",
+  "displayName": "Codex聊天迁移（Windows转Mac）",
+  "displayDescription": "Safely export, transfer, restore, verify, or roll back local Codex chat sessions from Windows to macOS. Use when the user asks to migrate or back up Codex chats from a Windows PC to a Mac; do not use for project-file migration, settings sync, or migrations in another direction.",
+  "contentHash": "sha256:7b4d35072d74824237aef7d1959951f8c310922d0f1421e4d8085c909a97d45d",
+  "installedAt": "2026-11-06T02:50:45.859Z",
+  "origin": "INSTALLED"
+}
