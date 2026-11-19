@@ -1,104 +1,299 @@
 {
-  "date": "2026-11-11",
-  "main_skill_capabilities": 11,
-  "skill_directories": 12,
-  "workbenches": 1,
+  "date": "2026-11-19",
+  "core_skill_groups": 14,
+  "source_directories": 20,
   "entries": [
     {
-      "name": "白底透明图 V2",
-      "id": "chutu-baidi-touming-v2",
-      "version": "2.4.0",
-      "purpose": "800×800 白底 JPG、透明 PNG；每款高清分层 PSD、独立蒙版；边缘检查与 PS 精修队列。",
-      "destination": "kkc/skills/chutu-baidi-touming-v2"
-    },
-    {
-      "name": "尺寸调整",
-      "id": "chutu-chicun-tiaozheng",
-      "version": "3.4.1（整批／逐张两版）",
-      "purpose": "主图和场景图按用途裁切、多尺寸导出、分组预览确认、图片与对应 PSD 数据包交付。",
-      "destination": "kkc/skills/chutu-chicun-tiaozheng"
-    },
-    {
-      "name": "小图找大图／同名替换",
-      "id": "replace-images-by-name",
-      "version": "2026-11-02 交付版",
-      "purpose": "按文件名用高清原图替换已选小图，检查重名、缺失、备份和替换结果。",
-      "destination": "kkc/skills/replace-images-by-name"
-    },
-    {
-      "name": "AI 商品差异检测",
-      "id": "ai-product-image-diff",
-      "version": "2026-11-10 更新版",
-      "purpose": "实拍与 AI 图按商品细节逐图对照，编号放大展示差异，并按指定位置修复复核。",
-      "destination": "kkc/skills/ai-product-image-diff"
-    },
-    {
-      "name": "SKU 同款换色场景套版",
-      "id": "ecom-color-scene-swap",
-      "version": "2026-10-27 版",
-      "purpose": "按款号、颜色选产品与场景图，调整裁切，替换卡片内商品及颜色文字。",
-      "destination": "kkc/skills/ecom-color-scene-swap"
-    },
-    {
-      "name": "商品视觉审稿",
-      "id": "kocotree-visual-review",
-      "version": "2026-11-02 精简版",
-      "purpose": "初稿、返稿、终稿九项审核；追踪问题关闭，保留本地审核记录和已解决案例库。",
-      "destination": "kkc/skills/kocotree-visual-review"
-    },
-    {
-      "name": "指定商品选区 PSD",
-      "id": "product-selection-psd",
-      "version": "2026-11-03 版",
-      "purpose": "在原图中选择指定商品，保留完整原图、独立商品层和可编辑蒙版。",
-      "destination": "kkc/skills/product-selection-psd"
-    },
-    {
-      "name": "详情页图片处理 Skill",
-      "id": "visual-detail-image-processor",
-      "version": "2026-11-04 本地更新版",
-      "purpose": "从 PSD／PSB 母版生成可编辑详情长图，保留智能对象、文案和表格，按需导出 JPG 模块。",
-      "destination": "kkc/skills/visual-detail-image-processor"
-    },
-    {
-      "name": "电商服饰视频提示词",
-      "id": "ecom-video-prompt",
-      "version": "2026-11-09 更新版",
-      "purpose": "基于模特参考图、商品卖点和动作撰写中文图生视频提示词；处理布料、光影和动作的 AI 感。",
-      "destination": "kkc/skills/ecom-video-prompt"
-    },
-    {
-      "name": "Lovart 服装场景图提示词",
-      "id": "lovart-apparel-prompt",
-      "version": "2026-11-10 更新版",
-      "purpose": "结合实拍、服装细节和动作场景参考，生成主提示词与局部返修词，约束质感、Logo 和指定模特。",
-      "destination": "kkc/skills/lovart-apparel-prompt"
-    },
-    {
-      "name": "AI 案例取证／使用报告",
       "id": "ai-case-evidence",
+      "name": "AI案例取证",
       "version": "1.5.0",
-      "purpose": "整理原始证据、产物、反馈、计时与人工复核，生成案例提交稿和固定模板使用报告。",
-      "destination": "kkc/skills/ai-case-evidence"
+      "state": "source_snapshot",
+      "path": "kkc/skills/ai-case-evidence"
     },
     {
-      "name": "详情页套版工作台",
-      "id": "detail-workbench",
-      "version": "0.5.11（含 5 套母版）",
-      "purpose": "Windows 图形界面导入商品资料、绑定图片与表格、预览排版，再调用 Photoshop 生成可编辑 PSB。",
-      "destination": "kkc/workbenches/detail-workbench"
+      "id": "ai-product-image-diff",
+      "name": "AI商品差异检测",
+      "version": "本机当前快照",
+      "state": "source_snapshot",
+      "path": "kkc/skills/ai-product-image-diff"
+    },
+    {
+      "id": "chutu-baidi-touming",
+      "name": "白底透明图基础版",
+      "version": "本机当前快照",
+      "state": "source_snapshot",
+      "path": "kkc/skills/chutu-baidi-touming"
+    },
+    {
+      "id": "chutu-baidi-touming-v2",
+      "name": "白底透明图V2",
+      "version": "2.4.0",
+      "state": "source_snapshot",
+      "path": "kkc/skills/chutu-baidi-touming-v2"
+    },
+    {
+      "id": "chutu-chicun-tiaozheng",
+      "name": "尺寸调整",
+      "version": "本机当前快照",
+      "state": "source_snapshot",
+      "path": "kkc/skills/chutu-chicun-tiaozheng"
+    },
+    {
+      "id": "chutu-chicun-tiaozheng-single",
+      "name": "尺寸调整逐张版（保留）",
+      "version": "本机当前快照",
+      "state": "source_snapshot",
+      "path": "kkc/skills/chutu-chicun-tiaozheng-single"
+    },
+    {
+      "id": "codex-chat-windows-to-mac-migration",
+      "name": "Codex聊天迁移（引入）",
+      "version": "本机当前快照",
+      "state": "source_snapshot",
+      "path": "kkc/skills/codex-chat-windows-to-mac-migration"
+    },
+    {
+      "id": "ecom-color-scene-swap",
+      "name": "SKU同款不同色套版",
+      "version": "本机当前快照",
+      "state": "source_snapshot",
+      "path": "kkc/skills/ecom-color-scene-swap"
+    },
+    {
+      "id": "ecom-image-pipeline",
+      "name": "通用电商出图",
+      "version": "本机当前快照",
+      "state": "source_snapshot",
+      "path": "kkc/skills/ecom-image-pipeline"
+    },
+    {
+      "id": "ecom-video-prompt",
+      "name": "电商视频提示词V1",
+      "version": "本机当前快照",
+      "state": "source_snapshot",
+      "path": "kkc/skills/ecom-video-prompt"
+    },
+    {
+      "id": "ecom-video-prompt-v2",
+      "name": "电商视频提示词V2",
+      "version": "本机当前快照",
+      "state": "source_snapshot",
+      "path": "kkc/skills/ecom-video-prompt-v2"
+    },
+    {
+      "id": "fabric-texture-repair",
+      "name": "面料质感修复",
+      "version": "本机当前快照",
+      "state": "source_snapshot",
+      "path": "kkc/skills/fabric-texture-repair"
+    },
+    {
+      "id": "kocotree-visual-review",
+      "name": "商品视觉审稿",
+      "version": "本机当前快照",
+      "state": "source_snapshot",
+      "path": "kkc/skills/kocotree-visual-review"
+    },
+    {
+      "id": "lovart-apparel-prompt",
+      "name": "Lovart服装场景提示词",
+      "version": "本机当前快照",
+      "state": "source_snapshot",
+      "path": "kkc/skills/lovart-apparel-prompt"
+    },
+    {
+      "id": "product-selection-psd",
+      "name": "指定商品选区PSD",
+      "version": "本机当前快照",
+      "state": "source_snapshot",
+      "path": "kkc/skills/product-selection-psd"
+    },
+    {
+      "id": "replace-images-by-name",
+      "name": "小图找大图",
+      "version": "本机当前快照",
+      "state": "source_snapshot",
+      "path": "kkc/skills/replace-images-by-name"
+    },
+    {
+      "id": "skc-ghost-mannequin",
+      "name": "服装空模SKC（草案）",
+      "version": "本机当前快照",
+      "state": "draft",
+      "path": "kkc/skills/skc-ghost-mannequin"
+    },
+    {
+      "id": "super-token-saver",
+      "name": "上下文交接与恢复（引入）",
+      "version": "本机当前快照",
+      "state": "source_snapshot",
+      "path": "kkc/skills/super-token-saver"
+    },
+    {
+      "id": "token-saver",
+      "name": "Token节约规则（引入）",
+      "version": "本机当前快照",
+      "state": "source_snapshot",
+      "path": "kkc/skills/token-saver"
+    },
+    {
+      "id": "visual-detail-image-processor",
+      "name": "详情页套版",
+      "version": "本机当前快照",
+      "state": "source_snapshot",
+      "path": "kkc/skills/visual-detail-image-processor"
     }
   ],
-  "size_adjustment_variant": "kkc/skills/chutu-chicun-tiaozheng-single",
+  "changed_skills": [
+    {
+      "id": "ai-product-image-diff",
+      "source": "C:\\Users\\Administrator\\.codex\\skills\\ai-product-image-diff",
+      "changed_files": [
+        "SKILL.md",
+        "agents/openai.yaml",
+        "assets/bulk-review.html",
+        "assets/bulk-review.js",
+        "references/bulk-selection.md",
+        "references/fabric-quality.md",
+        "references/repair-workflow.md",
+        "references/review-contract.md",
+        "scripts/build_bulk_review.py",
+        "scripts/review_contract.py",
+        "tests/bulk-review.test.js",
+        "scripts/tests/test_review_contract.py"
+      ]
+    },
+    {
+      "id": "codex-chat-windows-to-mac-migration",
+      "source": "C:\\Users\\Administrator\\.codex\\skills\\codex-chat-windows-to-mac-migration",
+      "changed_files": [
+        ".kocotree-skill.json",
+        "SKILL.md",
+        "agents/openai.yaml",
+        "references/SOP.md",
+        "scripts/export-codex-chats-for-mac.ps1",
+        "scripts/restore-codex-chats-mac.sh"
+      ]
+    },
+    {
+      "id": "ecom-video-prompt-v2",
+      "source": "C:\\Users\\Administrator\\.codex\\skills\\ecom-video-prompt-v2",
+      "changed_files": [
+        "SKILL.md"
+      ]
+    },
+    {
+      "id": "fabric-texture-repair",
+      "source": "C:\\Users\\Administrator\\.codex\\skills\\fabric-texture-repair",
+      "changed_files": [
+        "SKILL.md",
+        "agents/openai.yaml",
+        "references/check.md",
+        "references/repair.md",
+        "references/tools.md",
+        "scripts/fabric_tools.py",
+        "scripts/psd_pair.py",
+        "scripts/selftest.py"
+      ]
+    },
+    {
+      "id": "kocotree-visual-review",
+      "source": "C:\\Users\\Administrator\\.codex\\skills\\kocotree-visual-review",
+      "changed_files": [
+        "SKILL.md",
+        "assets/review-template.json",
+        "references/case-library.md",
+        "references/feishu-sync.md",
+        "references/record-schema.md",
+        "scripts/build_case_library.py",
+        "scripts/search_cases.py",
+        "scripts/test_case_library.py",
+        "scripts/test_validate_review.py",
+        "scripts/validate_review.py"
+      ]
+    },
+    {
+      "id": "super-token-saver",
+      "source": "C:\\Users\\Administrator\\.codex\\skills\\super-token-saver",
+      "changed_files": [
+        "LICENSE",
+        "THIRD-PARTY-NOTICES.md",
+        "scripts/list-sessions.js",
+        "scripts/preprocess.js",
+        "scripts/restore-ledger.js",
+        "scripts/restore.js",
+        "scripts/transcript-lines.js",
+        "scripts/lib/accounts.js",
+        "scripts/lib/cache-paths.js",
+        "scripts/lib/codex-transcript.js",
+        "skills/s-compact/SKILL.md",
+        "skills/s-continue/SKILL.md"
+      ]
+    },
+    {
+      "id": "token-saver",
+      "source": "C:\\Users\\Administrator\\.codex\\skills\\token-saver",
+      "changed_files": [
+        "LICENSE",
+        "SKILL.md"
+      ]
+    },
+    {
+      "id": "chutu-baidi-touming",
+      "source": "C:\\Users\\Administrator\\.agents\\skills\\chutu-baidi-touming",
+      "changed_files": [
+        "SKILL.md",
+        "scripts/bg_assets.py",
+        "scripts/image_size_limit.py",
+        "scripts/launch.py",
+        "scripts/run_bg.ps1",
+        "scripts/selftest.py",
+        "scripts/selftest_image_size.py"
+      ]
+    },
+    {
+      "id": "chutu-chicun-tiaozheng",
+      "source": "C:\\Users\\Administrator\\.agents\\skills\\chutu-chicun-tiaozheng",
+      "changed_files": [
+        "scripts/delivery_notes.py"
+      ]
+    },
+    {
+      "id": "ecom-image-pipeline",
+      "source": "C:\\Users\\Administrator\\.agents\\skills\\ecom-image-pipeline",
+      "changed_files": [
+        "SKILL.md",
+        "agents/openai.yaml"
+      ]
+    },
+    {
+      "id": "skc-ghost-mannequin",
+      "source": "C:\\Users\\Administrator\\Documents\\ChatGPT\\设计skill\\skc-ghost-mannequin",
+      "changed_files": [
+        "SKILL.md",
+        "references/imagegen-and-qa.md"
+      ]
+    }
+  ],
+  "unchanged_skills": [
+    "ai-case-evidence",
+    "chutu-baidi-touming-v2",
+    "ecom-color-scene-swap",
+    "ecom-video-prompt",
+    "lovart-apparel-prompt",
+    "product-selection-psd",
+    "replace-images-by-name",
+    "visual-detail-image-processor"
+  ],
   "workbench_release": {
-    "version": "0.5.11",
+    "version": "0.5.13",
     "templates": 5,
-    "filename": "DetailWorkbench-v0.5.11-Windows-5-templates.zip",
-    "bytes": 1240064514,
-    "sha256": "aedb451d4b613bc1731977519ea4ad18033350e5d17f45735cc71a992b3bfedb",
-    "download_url": "https://github.com/ssjsjdjj/codex-image-skills/releases/download/kkc-2026-11-11/DetailWorkbench-v0.5.11-Windows-5-templates.zip",
-    "release_url": "https://github.com/ssjsjdjj/codex-image-skills/releases/tag/kkc-2026-11-11",
-    "installation": "完整解压后运行一键安装.cmd，再运行启动工作台.cmd。需要 Windows、联网安装依赖及 Photoshop。"
+    "filename": "DetailWorkbench-v0.5.13-Windows-5-templates.zip",
+    "bytes": 766715603,
+    "sha256": "b76813d22f33ef07730872c57ee4b3ef2c7d45207f97d751499e0fdee307189d",
+    "download_url": "https://github.com/ssjsjdjj/codex-image-skills/releases/download/kkc-2026-11-19/DetailWorkbench-v0.5.13-Windows-5-templates.zip",
+    "release_url": "https://github.com/ssjsjdjj/codex-image-skills/releases/tag/kkc-2026-11-19",
+    "installation": "完整解压后按随包安装说明安装。需要Windows和Photoshop。"
   },
   "files": [
     {
@@ -108,13 +303,18 @@
     },
     {
       "path": "kkc/packages/ai-product-image-diff.zip",
-      "bytes": 7858,
-      "sha256": "64a04f7bc9458f222d2013557f4760e54f3e6ef2a6817b947e522c65ac4e2c73"
+      "bytes": 48880,
+      "sha256": "67cca77fe2b959c227d588a0a8929c495397b2a5876c7d94ce811e2089e59b85"
     },
     {
       "path": "kkc/packages/chutu-baidi-touming-v2.zip",
       "bytes": 90460,
       "sha256": "6f8d9ddc2e5acbb342779d8e9d3b21f3a4dcb1a02d9c3297dcc429d58e693df0"
+    },
+    {
+      "path": "kkc/packages/chutu-baidi-touming.zip",
+      "bytes": 25811,
+      "sha256": "6f910283bceb31613703cbe27038912178ebd174d62cdf72891043f775a9fb81"
     },
     {
       "path": "kkc/packages/chutu-chicun-tiaozheng-single.zip",
@@ -123,8 +323,13 @@
     },
     {
       "path": "kkc/packages/chutu-chicun-tiaozheng.zip",
-      "bytes": 230467,
-      "sha256": "a9b651c61bf138d394c65630ab014cf0ee3d4449b652d17c6ba3eae800d74693"
+      "bytes": 230344,
+      "sha256": "4ed0204d9dc6fddcff453ec5344205d6ef3afddb9e82457007fdc36f19d9bfcd"
+    },
+    {
+      "path": "kkc/packages/codex-chat-windows-to-mac-migration.zip",
+      "bytes": 9822,
+      "sha256": "32d1e86459dcefded912953f39a9d579996fe53088e7f68bd2cafb945fe877a3"
     },
     {
       "path": "kkc/packages/detail-workbench-v0.5.11.json",
@@ -132,9 +337,14 @@
       "sha256": "b5ea88fc4aa8ead825fb3a165a51afedb3004d08ab7d000d5ff7ddf133644780"
     },
     {
+      "path": "kkc/packages/detail-workbench-v0.5.13.json",
+      "bytes": 560,
+      "sha256": "315016b06dd10ff43315364486296cb4151a87a3a0a05a345b6cad473362b7f5"
+    },
+    {
       "path": "kkc/packages/detail-workbench-安装说明.md",
-      "bytes": 1844,
-      "sha256": "8df7f5181d96047371d331a589c65649db56fae23fccebebe6afb5a93458b06a"
+      "bytes": 1058,
+      "sha256": "67ddff2bd86536e8b5eb46b23f2c8a31bb5d2660324a24e4fe153fc6880c0b64"
     },
     {
       "path": "kkc/packages/DetailWorkbench-v0.5.11-Windows-5-templates.zip.sha256",
@@ -142,9 +352,24 @@
       "sha256": "3952e16dbc96dacdba6e5cfb7ffd79f46bbd8861ecd9e572a9d556ef1f4c1719"
     },
     {
+      "path": "kkc/packages/DetailWorkbench-v0.5.13-Windows-5-templates.zip.sha256",
+      "bytes": 115,
+      "sha256": "75c227f1f209d270706b830e62b5a105e8b5fae4d57d9b5cfdf0c5a041524725"
+    },
+    {
       "path": "kkc/packages/ecom-color-scene-swap.zip",
       "bytes": 5787,
       "sha256": "8631fa596a1176fa0cac5e65ce9c9d39232d7102bca87fce412be0685f31fabd"
+    },
+    {
+      "path": "kkc/packages/ecom-image-pipeline.zip",
+      "bytes": 10374,
+      "sha256": "a075ea5a1ae38a10e052d360251d45f6ebc96d98290ee470de4ced2896d4b7ca"
+    },
+    {
+      "path": "kkc/packages/ecom-video-prompt-v2.zip",
+      "bytes": 4673,
+      "sha256": "a00d58384c4bef46dee7499b0322748d1962ced06508f8dbbd8d74beff6d267b"
     },
     {
       "path": "kkc/packages/ecom-video-prompt.zip",
@@ -152,9 +377,14 @@
       "sha256": "f3fcd7ba44803d5a0aca2a6b1daffe90155229284d526048a9e99b8eedd6c317"
     },
     {
+      "path": "kkc/packages/fabric-texture-repair.zip",
+      "bytes": 28310,
+      "sha256": "db9ee509bfc002645b90dc8acc0824e2ec1a8ea1bd12a12b288526a4dd084a32"
+    },
+    {
       "path": "kkc/packages/kocotree-visual-review.zip",
-      "bytes": 30389,
-      "sha256": "037331d5c3e8af238958bf5ab9ae52c6e4399f0c75d0607b3fe18bf07d52362d"
+      "bytes": 29399,
+      "sha256": "33295f3302f5f2d0b99ede1fa02db70c0298848f75a22cd8c2e117771d7a5cee"
     },
     {
       "path": "kkc/packages/lovart-apparel-prompt.zip",
@@ -172,14 +402,29 @@
       "sha256": "c34177ca1ce882a1d80e3c8e089eeea0871d173cf38d448ee8aad311707b41da"
     },
     {
+      "path": "kkc/packages/skc-ghost-mannequin.zip",
+      "bytes": 3907,
+      "sha256": "d3b34d129ae7cef8faf4de1ffb4e7711ff992df8032f25cdb828031c5b0dd5ca"
+    },
+    {
+      "path": "kkc/packages/super-token-saver.zip",
+      "bytes": 69118,
+      "sha256": "7d46f5d2f7b852d9fa94fbd8d037c9dba1fbb3143ff1c561e20e7eed25383bb7"
+    },
+    {
+      "path": "kkc/packages/token-saver.zip",
+      "bytes": 3226,
+      "sha256": "a22d55369e9fe476a1b76af219a7290091a20acbe543de4178fcceeee46e7e83"
+    },
+    {
       "path": "kkc/packages/visual-detail-image-processor.zip",
       "bytes": 8738844,
       "sha256": "ae385d64dd6c05b4ed6ec1efb6c54592e27e49858c8ae55b61d601a9df6ad487"
     },
     {
       "path": "kkc/README.md",
-      "bytes": 6080,
-      "sha256": "1dcf909a652565a0f8e39267e14e118e3d471cef544033ede22453c5795fd28d"
+      "bytes": 4966,
+      "sha256": "6c59265d4edc63f9916c103f356aaa049e6e236a3b1ff6f6cb40acf5ec46678a"
     },
     {
       "path": "kkc/skills/ai-case-evidence/agents/openai.yaml",
@@ -263,18 +508,98 @@
     },
     {
       "path": "kkc/skills/ai-product-image-diff/agents/openai.yaml",
-      "bytes": 408,
-      "sha256": "45d0d9ce1e43d7fe7686ebeddeceaf4390888a4894786c22f93cf6be26e05c8c"
+      "bytes": 445,
+      "sha256": "48897014149c58a956b1171609a4de9234ab0210e2f4cfa37e97e909a30b11fe"
+    },
+    {
+      "path": "kkc/skills/ai-product-image-diff/assets/bulk-review.html",
+      "bytes": 7989,
+      "sha256": "e0dce7352cf132df104d23a3089c353a52094265e6a648a98f30a6e2471c0271"
+    },
+    {
+      "path": "kkc/skills/ai-product-image-diff/assets/bulk-review.js",
+      "bytes": 21222,
+      "sha256": "e487e56299feea09720120dfe1459a20726e54fe5670f2b5ebe9dbaa455a2e85"
+    },
+    {
+      "path": "kkc/skills/ai-product-image-diff/references/bulk-selection.md",
+      "bytes": 2689,
+      "sha256": "f38bb2e05d818676d8431c88baf295ba4e04aeb288020854d68b6015847cd241"
+    },
+    {
+      "path": "kkc/skills/ai-product-image-diff/references/fabric-quality.md",
+      "bytes": 7860,
+      "sha256": "e7dc95e6d043aac0d9b7d222436898cad3c31d23fa15b7a924b2d0134cb1752a"
     },
     {
       "path": "kkc/skills/ai-product-image-diff/references/repair-workflow.md",
-      "bytes": 4839,
-      "sha256": "e1bdff2271b7071f89611488eb65376939929c2fb49e64306c8b1644aa5e5e25"
+      "bytes": 6512,
+      "sha256": "d5e863b50d609f1115faab5a4bff294d97df9b6a30df3111bd2f9eb15dab54ba"
+    },
+    {
+      "path": "kkc/skills/ai-product-image-diff/references/review-contract.md",
+      "bytes": 7885,
+      "sha256": "f6b99b101bfe944541ec8a2a1673bb40039f845fee7925857248420c6aad467f"
+    },
+    {
+      "path": "kkc/skills/ai-product-image-diff/scripts/build_bulk_review.py",
+      "bytes": 2683,
+      "sha256": "5bf4a9e2d99c80622ba51160ea5029e6f7935a25fe3666a1cb91ebb1c84e334e"
+    },
+    {
+      "path": "kkc/skills/ai-product-image-diff/scripts/review_contract.py",
+      "bytes": 35056,
+      "sha256": "13c965646b74198f5abc704a1cc82cc7a351cbaba55085eb7abaec4b03198782"
+    },
+    {
+      "path": "kkc/skills/ai-product-image-diff/scripts/tests/test_review_contract.py",
+      "bytes": 19305,
+      "sha256": "ca52db1428bd65ab85e3812c7e25cd18d563289e7d5b516d774aabe0ac7b6f89"
     },
     {
       "path": "kkc/skills/ai-product-image-diff/SKILL.md",
-      "bytes": 8629,
-      "sha256": "4f4a6d267d2e525815e9b6f81c7547b15a5c9cd084e9142dd1eb0ded3c95f83b"
+      "bytes": 8691,
+      "sha256": "3d2117f0aee4e740b1ae41ce44394b83c5b0818b2862e92969f9f6ed492c6e57"
+    },
+    {
+      "path": "kkc/skills/ai-product-image-diff/tests/bulk-review.test.js",
+      "bytes": 10253,
+      "sha256": "dfc32b0b1392af7f5b0ceefec754379591a053a191275608f565b33145c09a7a"
+    },
+    {
+      "path": "kkc/skills/chutu-baidi-touming/scripts/bg_assets.py",
+      "bytes": 20765,
+      "sha256": "d6e9c2904ab60f61c5b5d56108e5d2f893f332ef591bbde3c3b1ef946c617253"
+    },
+    {
+      "path": "kkc/skills/chutu-baidi-touming/scripts/image_size_limit.py",
+      "bytes": 5896,
+      "sha256": "ada361f4fbc041c7d26ea27d2dd6747c12937db16fbb9fdee9fb8827cdb63733"
+    },
+    {
+      "path": "kkc/skills/chutu-baidi-touming/scripts/launch.py",
+      "bytes": 1395,
+      "sha256": "3ee65113547043d915977d5a7be196719e50a78f1af7d066141e29c045def1cc"
+    },
+    {
+      "path": "kkc/skills/chutu-baidi-touming/scripts/run_bg.ps1",
+      "bytes": 664,
+      "sha256": "03da74c36df4f27ef1f393e1d8a22608c00ff666a9ff39300c768d57e5a2bf05"
+    },
+    {
+      "path": "kkc/skills/chutu-baidi-touming/scripts/selftest.py",
+      "bytes": 18032,
+      "sha256": "f32c41d90aac9165a76a0ea86f190b2d957968ef8f3092564294903452cdccfb"
+    },
+    {
+      "path": "kkc/skills/chutu-baidi-touming/scripts/selftest_image_size.py",
+      "bytes": 7181,
+      "sha256": "615d0eb469d838ee1b64cce8f80aff17c19e974fd3d3e1bb5724d3e81dd416c4"
+    },
+    {
+      "path": "kkc/skills/chutu-baidi-touming/SKILL.md",
+      "bytes": 10402,
+      "sha256": "a4d4cb0416d31164af1959adf0a584b163f7a299b28937426b8ac45dd7e32319"
     },
     {
       "path": "kkc/skills/chutu-baidi-touming-v2/agents/openai.yaml",
@@ -428,8 +753,8 @@
     },
     {
       "path": "kkc/skills/chutu-chicun-tiaozheng/scripts/delivery_notes.py",
-      "bytes": 23617,
-      "sha256": "a471d11e0c04aead58df8a46ff8fe7b37d89a83bc46baa67435c71b5f06ba863"
+      "bytes": 23402,
+      "sha256": "60f5572b1afea6c041ccc5aab9274cdfadff2d03d7c1c748b7d896c9834c48e1"
     },
     {
       "path": "kkc/skills/chutu-chicun-tiaozheng/scripts/delivery_pack.py",
@@ -662,6 +987,36 @@
       "sha256": "50a23e13528c58eec770906435bafb5395e859bc1f783fd63e21ad545f104055"
     },
     {
+      "path": "kkc/skills/codex-chat-windows-to-mac-migration/.kocotree-skill.json",
+      "bytes": 739,
+      "sha256": "467bb65c178604846ea60c1c1076ea9a7febea0f41131b159db6a572bfbca71c"
+    },
+    {
+      "path": "kkc/skills/codex-chat-windows-to-mac-migration/agents/openai.yaml",
+      "bytes": 279,
+      "sha256": "4c946198096665af384407d4d5430bdba6b542f3bbefa6eac03af0f3e80167f6"
+    },
+    {
+      "path": "kkc/skills/codex-chat-windows-to-mac-migration/references/SOP.md",
+      "bytes": 4265,
+      "sha256": "4152f73963a94b8cfd9db74394d2d11bdb878394d30e0af31490cd2953d70437"
+    },
+    {
+      "path": "kkc/skills/codex-chat-windows-to-mac-migration/scripts/export-codex-chats-for-mac.ps1",
+      "bytes": 6634,
+      "sha256": "fcd695d2066c53b6bc736190c5f90b6ee02da34ae9d6d1b0ec585b4f1746c787"
+    },
+    {
+      "path": "kkc/skills/codex-chat-windows-to-mac-migration/scripts/restore-codex-chats-mac.sh",
+      "bytes": 5558,
+      "sha256": "9ad56946a94af78766706645479321a0249c2be45295f5c35018565a67887ff0"
+    },
+    {
+      "path": "kkc/skills/codex-chat-windows-to-mac-migration/SKILL.md",
+      "bytes": 3275,
+      "sha256": "942d5fa08aa26c9b4c989aa0a558f5c641e3e9d4ea5346f22915c0713b2240b6"
+    },
+    {
       "path": "kkc/skills/ecom-color-scene-swap/agents/openai.yaml",
       "bytes": 371,
       "sha256": "301751f8e380258e60242195396c61150722863fd0669e519340eca1cecafae1"
@@ -677,19 +1032,74 @@
       "sha256": "e20cb900c787a7cd57623ad790b4bd54e09b884502a60caf0fd6434e10aa6177"
     },
     {
+      "path": "kkc/skills/ecom-image-pipeline/agents/openai.yaml",
+      "bytes": 147,
+      "sha256": "68e50224240a063fe5e169cf04387d3dec88103a21f0ace8e70c243a31283a1b"
+    },
+    {
+      "path": "kkc/skills/ecom-image-pipeline/SKILL.md",
+      "bytes": 23310,
+      "sha256": "4ec6d7242872e36eddb445169e724d95497b8fd0778264c346eacfefdc5b2e44"
+    },
+    {
       "path": "kkc/skills/ecom-video-prompt/SKILL.md",
       "bytes": 7952,
       "sha256": "d65a45d30728be69c1d94c6c372662e8ff6a4cf5d2a74c84018c2c6f04ea7885"
     },
     {
+      "path": "kkc/skills/ecom-video-prompt-v2/SKILL.md",
+      "bytes": 9273,
+      "sha256": "3928154743dc1daca0d5ca5569b22064c47db34a028dc5af3c6788b8407a0888"
+    },
+    {
+      "path": "kkc/skills/fabric-texture-repair/agents/openai.yaml",
+      "bytes": 439,
+      "sha256": "8ec74aa29c31a398d3d8561d835260af98fe167477d8832362d8bca7b93125d0"
+    },
+    {
+      "path": "kkc/skills/fabric-texture-repair/references/check.md",
+      "bytes": 4724,
+      "sha256": "06f85bb391e69670467b9ed407f95751931dfb9e9676a0d0ec87e982dfc115f3"
+    },
+    {
+      "path": "kkc/skills/fabric-texture-repair/references/repair.md",
+      "bytes": 6481,
+      "sha256": "1eef8bd81a07f93cd9e033323189f98cb58dd33d22c13c650a6144a0fa45d82a"
+    },
+    {
+      "path": "kkc/skills/fabric-texture-repair/references/tools.md",
+      "bytes": 10113,
+      "sha256": "5ab21ffc06045429a10b28f5c0193880570a43e8fa227c831f914e640c953960"
+    },
+    {
+      "path": "kkc/skills/fabric-texture-repair/scripts/fabric_tools.py",
+      "bytes": 26011,
+      "sha256": "d1933d2f601167f3be5c03644c892bb9e722be61a1773345d04fbe042662cfc9"
+    },
+    {
+      "path": "kkc/skills/fabric-texture-repair/scripts/psd_pair.py",
+      "bytes": 6401,
+      "sha256": "c21f13711b31041e030f3d57ca57274c6d227d2284b2c53fbbafc533eb82398d"
+    },
+    {
+      "path": "kkc/skills/fabric-texture-repair/scripts/selftest.py",
+      "bytes": 12717,
+      "sha256": "6ac1166308f72195f42d44232879e4578e756d9f85908b3e1984622c44907336"
+    },
+    {
+      "path": "kkc/skills/fabric-texture-repair/SKILL.md",
+      "bytes": 3984,
+      "sha256": "047cbf8828147fdb296042c435185432f38683401653636463083af351ecf59f"
+    },
+    {
       "path": "kkc/skills/kocotree-visual-review/assets/review-template.json",
-      "bytes": 2828,
-      "sha256": "ef9459adf04f82ba3b346567af158152b72e57457c2b1e0cbc17e76d0c823be6"
+      "bytes": 2945,
+      "sha256": "ea22a39acf97f840f45a9cdf5f86ff0258c66309517ff6c54f08d61521f81726"
     },
     {
       "path": "kkc/skills/kocotree-visual-review/references/case-library.md",
-      "bytes": 4620,
-      "sha256": "def26480180b866ce9f0684a09bf0bbc83387e6b6a6b04d762a220e5b6b06374"
+      "bytes": 2972,
+      "sha256": "5d0dbf8242dda93407f92e82d8f9a47268abed08d203dbd41704637169721c2e"
     },
     {
       "path": "kkc/skills/kocotree-visual-review/references/designer-growth.md",
@@ -697,9 +1107,14 @@
       "sha256": "b27199bc943c79f65149d56e72ad55536096cbf7ed2eaadb3fb2682627b9645a"
     },
     {
+      "path": "kkc/skills/kocotree-visual-review/references/feishu-sync.md",
+      "bytes": 2757,
+      "sha256": "bce8bb3da69511da6644aae18198312ac6a11fb2cf48098db356a17ce2226078"
+    },
+    {
       "path": "kkc/skills/kocotree-visual-review/references/record-schema.md",
-      "bytes": 6003,
-      "sha256": "51bf6c2bfded2561a89a106e1ee03b7fde700861a84c22fd3e0a173c0f4e99cd"
+      "bytes": 4600,
+      "sha256": "ff044b8857950d42b915d016ad6e09948f8903bfa72051ae1cab5a24020df50e"
     },
     {
       "path": "kkc/skills/kocotree-visual-review/references/rubric.md",
@@ -708,18 +1123,18 @@
     },
     {
       "path": "kkc/skills/kocotree-visual-review/scripts/build_case_library.py",
-      "bytes": 11079,
-      "sha256": "191553712b4049630bb7d0f4515671a32dae67d4cc43dc2e13575f7529f4c287"
+      "bytes": 9672,
+      "sha256": "d1b76ebb47c3f2eb00a905b73524e7a6e2b6020df09d636956a0cdc91205f9a8"
     },
     {
       "path": "kkc/skills/kocotree-visual-review/scripts/search_cases.py",
-      "bytes": 3385,
-      "sha256": "5eed011058623fa22ae2a04545a99949934407a98f482f7da52239dddf1a3783"
+      "bytes": 1963,
+      "sha256": "3444f0cbb6d3b9afe6c46973b5a08a872dba6fdfa61eb578d06c1373b08581e6"
     },
     {
       "path": "kkc/skills/kocotree-visual-review/scripts/test_case_library.py",
-      "bytes": 10392,
-      "sha256": "b7d1d2a23edf5d2893c2c06eb5a216135f5ca5adb4d6ca2d55972093353e4d6f"
+      "bytes": 5592,
+      "sha256": "4dc4f6fa08aee9e8500e7d2e289895bcc0dd788c582e6cd8f6646ad098d11daa"
     },
     {
       "path": "kkc/skills/kocotree-visual-review/scripts/test_cli.py",
@@ -728,18 +1143,18 @@
     },
     {
       "path": "kkc/skills/kocotree-visual-review/scripts/test_validate_review.py",
-      "bytes": 9998,
-      "sha256": "2f38efff896077b78ca91d10aa0b0a539ff3a241daee24bd8a09e75c0a4369a2"
+      "bytes": 6782,
+      "sha256": "f52e76471f25a5a421e59d2ae8356c0ad270ead0a930087ed48f2fb693fc1ff5"
     },
     {
       "path": "kkc/skills/kocotree-visual-review/scripts/validate_review.py",
-      "bytes": 16591,
-      "sha256": "e0eafed9c6a4f0f8ca539f645a92fd4cdf94a2fccfb52cf03f0cc2f51d2c5593"
+      "bytes": 16830,
+      "sha256": "859c3d3df5b8c9bcd34934c3bc42f8d1a42f5ac0385d3cae1b7bdbc2b43fbaa9"
     },
     {
       "path": "kkc/skills/kocotree-visual-review/SKILL.md",
-      "bytes": 5327,
-      "sha256": "53900e81c1a6696fcd7ff12e066ed011507778f5be5c0ba84d4555b191ab9cb6"
+      "bytes": 6136,
+      "sha256": "e8460a455a1fc4099f9734dab86ce791ada17145be9df0339d722ac415311aac"
     },
     {
       "path": "kkc/skills/lovart-apparel-prompt/agents/openai.yaml",
@@ -805,6 +1220,86 @@
       "path": "kkc/skills/replace-images-by-name/SKILL.md",
       "bytes": 7563,
       "sha256": "faf29ff98847fdd65acc7ded0eaab807ebcdc628b3b55efc9c4263605da3e79e"
+    },
+    {
+      "path": "kkc/skills/skc-ghost-mannequin/references/imagegen-and-qa.md",
+      "bytes": 2198,
+      "sha256": "9b705f9b27b9989e0ffaf0158b1c8ea05a1a26a4b4e6c834c4265bcc50c3939c"
+    },
+    {
+      "path": "kkc/skills/skc-ghost-mannequin/SKILL.md",
+      "bytes": 4025,
+      "sha256": "285e49ca23197b0eb08967acef0d380378c8b19f0eb0b7342e7c6597043f3eac"
+    },
+    {
+      "path": "kkc/skills/super-token-saver/LICENSE",
+      "bytes": 11269,
+      "sha256": "b2be6cee58cd34fbc0cba2ab4e8d5d41079bbc0c513f46420a3240ab09e32861"
+    },
+    {
+      "path": "kkc/skills/super-token-saver/scripts/lib/accounts.js",
+      "bytes": 3327,
+      "sha256": "81e4d48ffacfa6732608bd7fe433ff7e99084aeae08831732442de8f080f6d2d"
+    },
+    {
+      "path": "kkc/skills/super-token-saver/scripts/lib/cache-paths.js",
+      "bytes": 22469,
+      "sha256": "235554d72e047c7df09176b6486b53243280678a7f24c1fa12cb82aa1a237e79"
+    },
+    {
+      "path": "kkc/skills/super-token-saver/scripts/lib/codex-transcript.js",
+      "bytes": 19059,
+      "sha256": "605aacdb23baa4c8def43787b746f86c11b4ffdf74cd344d6e75adb50f337b1a"
+    },
+    {
+      "path": "kkc/skills/super-token-saver/scripts/list-sessions.js",
+      "bytes": 15476,
+      "sha256": "c10965995b7fbdd9fde250de0cf4490e5b69beb58eefea16bb7beebf6cc84c28"
+    },
+    {
+      "path": "kkc/skills/super-token-saver/scripts/preprocess.js",
+      "bytes": 27517,
+      "sha256": "348aadb93bd1a519b62d8ab5d9f1d33a397bf1a3d17850dbd96da805e07d078b"
+    },
+    {
+      "path": "kkc/skills/super-token-saver/scripts/restore-ledger.js",
+      "bytes": 38040,
+      "sha256": "ef214c4ac6bbe920a1ae7d3957b80d131bb80b4b466baf4e6a2ea4a400f4caea"
+    },
+    {
+      "path": "kkc/skills/super-token-saver/scripts/restore.js",
+      "bytes": 9472,
+      "sha256": "138389fb7e47d87b0026d687820f1252071bb41fd1c5e94bd741f6131b708ec3"
+    },
+    {
+      "path": "kkc/skills/super-token-saver/scripts/transcript-lines.js",
+      "bytes": 3721,
+      "sha256": "b097156e153eea3990c70fc37fb8c872d5edc4911eaa41c591b0e5fe847a68ff"
+    },
+    {
+      "path": "kkc/skills/super-token-saver/skills/s-compact/SKILL.md",
+      "bytes": 11161,
+      "sha256": "6410845d6c0c21b8d9cf403d3a98264b6c025e27548986400f691941e97de4f0"
+    },
+    {
+      "path": "kkc/skills/super-token-saver/skills/s-continue/SKILL.md",
+      "bytes": 26252,
+      "sha256": "d5498593b2f8833d321a78dc64288f43deacb82314478810061294251cbb7199"
+    },
+    {
+      "path": "kkc/skills/super-token-saver/THIRD-PARTY-NOTICES.md",
+      "bytes": 4058,
+      "sha256": "c867e724ae081b40e4bbd05b57923a22ae0e6c41360b081fcae1dab01c88a62e"
+    },
+    {
+      "path": "kkc/skills/token-saver/LICENSE",
+      "bytes": 234,
+      "sha256": "48658af05ff8bc894d287412a1e2ca3ef1b8e54b70105fc41c8a3b10e9ea1e76"
+    },
+    {
+      "path": "kkc/skills/token-saver/SKILL.md",
+      "bytes": 6226,
+      "sha256": "4a580f66716f05787aef8c6698fb8a38b7e139f8c398d686598382f6bd022ac0"
     },
     {
       "path": "kkc/skills/visual-detail-image-processor/agents/openai.yaml",
@@ -1018,8 +1513,8 @@
     },
     {
       "path": "kkc/workbenches/detail-workbench/app.py",
-      "bytes": 100374,
-      "sha256": "6fb805d77b76933dcc212bd120bf5fe35c9e6e069b08222dfe3dc4e31285d9ef"
+      "bytes": 103649,
+      "sha256": "07c2b2b09fcb8beca8537b0cf55b05993d3f08636faca5b6003f9384a1a3540c"
     },
     {
       "path": "kkc/workbenches/detail-workbench/crop_editor.py",
@@ -1037,14 +1532,19 @@
       "sha256": "78b6fa827c3f3b279008b2378aa2608a016c1d8f2b322f35aa8fa703c399756a"
     },
     {
+      "path": "kkc/workbenches/detail-workbench/engine/compact_template.jsx",
+      "bytes": 24434,
+      "sha256": "6cc75226d02dcad1b37bc56df7b3de58b70d09780bf8126ffbcf7c2801dde2bd"
+    },
+    {
       "path": "kkc/workbenches/detail-workbench/engine/editable_long_psd.jsx",
       "bytes": 16654,
       "sha256": "84000a58d585630ba4ce6203f8af9ed33d81fd100dca8e63239d0c0014efb2ca"
     },
     {
       "path": "kkc/workbenches/detail-workbench/engine/manifest_workbench.jsx",
-      "bytes": 31747,
-      "sha256": "ab18b8bba1a2fb328f30673b491a934e284e4ab42570de717e222500f8d14f62"
+      "bytes": 52301,
+      "sha256": "7c48b41fae968f8c0cb09597d39793bf3961f69b4dc6c4945f32ab652390695c"
     },
     {
       "path": "kkc/workbenches/detail-workbench/engine/mixed_detail_fonts.jsx",
@@ -1073,8 +1573,8 @@
     },
     {
       "path": "kkc/workbenches/detail-workbench/engine/template_manifest.jsx",
-      "bytes": 69868,
-      "sha256": "4e02a660fdcad8fa109b521a2226140cee9d351d1159ec7fbf09d4ade4d1b0b6"
+      "bytes": 81087,
+      "sha256": "6a8c2b1c941dd1beebbe0f74b9971e797911e6fddcf3cd344a783bc3d8c81929"
     },
     {
       "path": "kkc/workbenches/detail-workbench/engine/template_reference.jsx",
@@ -1083,8 +1583,8 @@
     },
     {
       "path": "kkc/workbenches/detail-workbench/engine/workbench.jsx",
-      "bytes": 23033,
-      "sha256": "1c1e0065c8673c812f79697fe86ea5cb04ff8009b71027c054cf480c2e181dd8"
+      "bytes": 23120,
+      "sha256": "954b51966fb082bd1fb3c47f0f1c828f93d5787b9735f271e033ce98948b5e97"
     },
     {
       "path": "kkc/workbenches/detail-workbench/feishu_auth.py",
@@ -1118,13 +1618,13 @@
     },
     {
       "path": "kkc/workbenches/detail-workbench/geometry.py",
-      "bytes": 20725,
-      "sha256": "f058330019a1517b7ea1eacb60e2085643e5ff5ac312ed72d0feaf2e6acf9b67"
+      "bytes": 36031,
+      "sha256": "8c05c2cb8eed0b86cccec6ef49ea5a3816659a07b6b021dc556de397eb12208d"
     },
     {
       "path": "kkc/workbenches/detail-workbench/install.cmd",
-      "bytes": 191,
-      "sha256": "834b8d4651c35317965a98d2c0ff2127d06a30fea91068aaf64ce1f4778ab0b2"
+      "bytes": 345,
+      "sha256": "8de545d276534226c898496359b43e4bc0181cc0a46113d2f794642c34dd5b8d"
     },
     {
       "path": "kkc/workbenches/detail-workbench/install.ps1",
@@ -1133,8 +1633,8 @@
     },
     {
       "path": "kkc/workbenches/detail-workbench/live_preview.py",
-      "bytes": 71339,
-      "sha256": "98d7f8cec3cf1c9253c9559724526658f7309904f323fb50b82bcaabdfe473a5"
+      "bytes": 80595,
+      "sha256": "481cd52c03f14d8e852ce6f2b1aa45cb533c96bbb54f9f3df2b5bcbf5657b914"
     },
     {
       "path": "kkc/workbenches/detail-workbench/package_io.py",
@@ -1153,8 +1653,8 @@
     },
     {
       "path": "kkc/workbenches/detail-workbench/README.md",
-      "bytes": 9903,
-      "sha256": "98f83bffcd77d4657473ece40317fa38015d1b356694fbbc22f3a99387c7673a"
+      "bytes": 11781,
+      "sha256": "3284c0fa232f7d9d4c8ff11a1a349c12cc454ba751e5f2982bd7196c1755de02"
     },
     {
       "path": "kkc/workbenches/detail-workbench/refresh_session.py",
@@ -1167,9 +1667,19 @@
       "sha256": "b7f950b02e9646e26551d15b3fae171a504245c7d6478c5a5e1a449577de267b"
     },
     {
+      "path": "kkc/workbenches/detail-workbench/table_data.py",
+      "bytes": 8651,
+      "sha256": "bee665fb171d486d3d82c598dfa7e6bb5d9016be6dfe05fde6ede204f50e1ec2"
+    },
+    {
       "path": "kkc/workbenches/detail-workbench/templates.py",
-      "bytes": 40184,
-      "sha256": "80c9a42df9f466dbc84bd314786082e93e7d7dbe9372c6e937197b4a7558edb3"
+      "bytes": 48858,
+      "sha256": "9ee2cf3cf349ecc5a6e679084290b5a6d932f649f1141f651b233e6912c48279"
+    },
+    {
+      "path": "kkc/workbenches/detail-workbench/test_refresh_session.py",
+      "bytes": 8063,
+      "sha256": "aa9bf345a1f14e22c2a4a0249ac358d55adc67fcba904961efc93f323c435e68"
     },
     {
       "path": "kkc/workbenches/detail-workbench/upgrade_templates.py",
@@ -1178,8 +1688,8 @@
     },
     {
       "path": "kkc/workbenches/detail-workbench/workbench.py",
-      "bytes": 31406,
-      "sha256": "2200cdfcfa421ca4a6a72602a0f3d1e06c6971ba23547c6f9fd5dd493ee255bf"
+      "bytes": 30859,
+      "sha256": "f142b61f31c164d680297cec21ec7be98bfa5e3b6adab140bd52d7bac06f8781"
     }
   ]
 }
