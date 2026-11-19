@@ -42,5 +42,6 @@
     "ai_recommendation": "insufficient_evidence",
     "supervisor": {"status": "pending", "decision": null, "reason": null, "calibrated_score": null}
   },
-  "package_status": "not_started"
+  "package_status": "not_started",
+  "sync": {"status": "not_requested", "record_id": null, "readback_at": null, "verified_fields": [], "error": null}
 }
