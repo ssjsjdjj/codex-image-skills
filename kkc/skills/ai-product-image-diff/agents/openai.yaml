@@ -1,4 +1,4 @@
 interface:
-  display_name: "AI产品差异检测与点选修复"
-  short_description: "逐图逐人展示放大差异，用户点选后自动选法局部修复并展示修后复核"
-  default_prompt: "使用 $ai-product-image-diff 对比 AI 图与实拍，逐图逐人展示编号放大预览；我指定修改项后自动选择合适方法修复，并展示修前、修后及参考对比与复核结果。"
+  display_name: "AI商品面料质感检查与差异修复"
+  short_description: "逐部位核对面料、网眼、针脚与结构，按范围局部修复并从最终文件复核"
+  default_prompt: "使用 $ai-product-image-diff 对比 AI 图与实拍，重点检查面料质感、网眼织纹和缝线，并核对其所属部件与结构；展示逐人编号放大证据，我指定范围后局部修复并复核最终文件。"
