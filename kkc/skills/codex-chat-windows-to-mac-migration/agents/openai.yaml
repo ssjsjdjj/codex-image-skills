@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex 聊天迁移（Windows → Mac）"
+  short_description: "安全导出并迁移 Windows 上的 Codex 聊天到 macOS"
+  default_prompt: "Use $codex-chat-windows-to-mac-migration to migrate my unarchived Codex chats safely from Windows to a Mac."
