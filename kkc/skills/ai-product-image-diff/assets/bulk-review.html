@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>差异检查 · 批量选择</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#edf2f4;color:#193e48;font:16px/1.65 "Microsoft YaHei",system-ui,sans-serif}main{max-width:1250px;margin:auto;padding:28px 20px 40px}h1{font-size:29px;margin:0 0 12px}h2{font-size:22px}button,select,input,textarea{font:inherit}button,select,input[type=search]{border:1px solid #b8cdd3;border-radius:8px;padding:8px 12px;background:white;color:#1b4c59}button{cursor:pointer}button:hover:not(:disabled){background:#e4f1f1}button:disabled{opacity:.45;cursor:default}.primary{background:#166c72;color:white;border-color:#166c72}.primary:hover:not(:disabled){background:#145e64}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #39aeb9;outline-offset:3px}.note{background:#dfedee;padding:15px 18px;border-radius:13px}.small{font-size:14px;color:#586f79}.bar{position:sticky;top:0;z-index:3;background:#f9fcfcf5;backdrop-filter:blur(8px);border:1px solid #c6d9dd;padding:16px;border-radius:13px;margin:20px 0}.filters,.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.filters{margin-bottom:12px}.filters label{display:flex;align-items:center;gap:6px}.filters input[type=search]{width:230px}.switch{font-size:14px}.actions{margin:10px 0}.summary{margin:20px 0;background:#fff9e8;border:1px solid #d6c68f;padding:18px;border-radius:13px}.summary h2{margin:0 0 8px}.summary textarea{width:100%;min-height:86px;padding:12px;border:1px solid #c9bf9d;border-radius:8px;color:#293c40;background:#fffef9}.chips{display:flex;gap:7px;flex-wrap:wrap;max-height:190px;overflow:auto;margin:12px 0}.chip{font-size:14px;padding:4px 9px;background:white;border:1px solid #d3cba9}.scene-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:30px 0 12px}.scene-head h2{margin:0}.issue{border:1px solid #cddce0;border-left:5px solid #ccd7db;background:white;border-radius:11px;padding:20px;margin:14px 0}.issue.is-selected{border-left-color:#147c83;box-shadow:0 0 0 1px #b0d7da}.issue-title{display:flex;gap:10px;align-items:flex-start;font-size:20px;font-weight:bold}.issue-title input{width:23px;height:23px;flex:none;margin-top:5px}.tag{display:inline-block;font-size:13px;background:#e9eff1;padding:2px 9px;border-radius:12px;margin:5px 7px 0 0}.tag.pending{background:#fff0cf;color:#81590d}.tag.repaired{background:#e0f0e7;color:#286a44}.tag.blocked{background:#eee;color:#626c70}.preview{display:block;margin:14px 0}.preview img{display:block;width:100%;height:auto;background:#f1f4f6;border-radius:7px}details{margin:16px 0}summary{cursor:pointer;font-weight:bold}a{color:#146f88}.empty{padding:35px;background:white;border-radius:12px}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:10px;text-align:left;vertical-align:top;border-bottom:1px solid #d5e1e4}.scene-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}.scene-card{background:white;padding:14px;border:1px solid #d2dfe2;border-radius:9px}.scene-card img{display:block;max-width:100%;height:220px;object-fit:contain;margin:auto}.filename{overflow-wrap:anywhere}footer{margin-top:30px;color:#59747d;font-size:14px}#copy-message{min-height:1.5em}#visible-summary{margin:8px 0 0}.coverage{margin-top:32px}.hide{display:none}
+.tag.repaired{background:#fff0cf;color:#81590d}.tag.verified{background:#e0f0e7;color:#286a44}.tag.adopted{background:#dfebff;color:#244d89}.tag.needs_review,.tag.unknown,.tag.readonly{background:#f9e9e4;color:#85432b}.evidence-warning{padding:9px 12px;border-left:3px solid #b46a3d;background:#fff5eb;font-size:14px;color:#784d2e}.evidence{overflow-wrap:anywhere}.summary textarea{min-height:210px;font-size:13px;line-height:1.5}
+@media(max-width:650px){main{padding:18px 12px}.bar{position:relative}.filters label{width:100%;justify-content:space-between}.filters select,.filters input[type=search]{max-width:72%;flex:1}.issue{padding:14px}.issue-title{font-size:18px}h1{font-size:24px}.summary{padding:14px}}
+</style></head><body><main>
+<h1 id="title">AI商品差异 · 批量选择</h1>
+<div class="note">优先查看面料质感、细纹、褶皱与局部画质。可按图或整批选择已确认的待修质感项，也可筛选商品结构、Logo 等问题；选完仍可逐项取消。页面只记录选择，复制或下载完整选择清单交回聊天后核对执行，没有图像修复后端。</div>
+<p class="small" id="batch-summary"></p>
+<div id="diagnostics" role="status"></div>
+<section class="bar" aria-label="筛选与批量选择">
+ <div class="filters">
+  <label>图片 <select id="scene-filter"><option value="all">全部图片</option></select></label>
+  <label>问题 <select id="kind-filter"><option value="Q">质感／面料／画质</option><option value="structure">商品结构／其他差异</option><option value="logo">已确认 Logo</option><option value="all">所有问题</option><option value="F">脸部候选</option><option value="R">证据不足</option></select></label>
+  <label>状态 <select id="state-filter"><option value="pending">待修复</option><option value="repaired">已修待复核</option><option value="verified">技术复核通过</option><option value="adopted">用户已采用</option><option value="needs_review">需重新复核</option><option value="unknown">状态未知</option><option value="blocked">证据不足／不执行</option><option value="all">全部状态</option></select></label>
+  <label>搜索 <input id="search" type="search" placeholder="编号、人物、文件名"></label>
+ </div>
+ <label class="switch"><input type="checkbox" id="redo"> 允许选择已处理项，用于返修（不自动选中）</label>
+ <div class="actions">
+  <button id="batch-texture" class="primary" type="button">本批次待修质感全选</button>
+  <button id="scene-texture" type="button" disabled>本图待修质感全选</button>
+  <button id="batch-logo" type="button">本批次待修 Logo 全选</button>
+  <button id="scene-logo" type="button" disabled>本图待修 Logo 全选</button>
+  <button id="select-visible" type="button">全选当前筛选结果</button>
+  <button id="invert-visible" type="button">反选当前结果</button>
+  <button id="clear" type="button">全部取消</button>
+ </div>
+ <p class="small" id="visible-summary" aria-live="polite"></p>
+</section>
+<section class="summary" aria-label="已选修复范围">
+ <h2 id="selected-count">已选 0 处</h2>
+ <p class="small">批量选择会保留其他已选项；筛选不会清空选择。可点击下方编号移除单项。</p>
+ <div class="chips" id="selected-chips"></div>
+ <label for="instruction">完整选择清单（含修复指令、图片／人物和当前输出版本）</label><textarea id="instruction" readonly placeholder="选择后生成绑定当前批次与版本的完整清单"></textarea>
+ <div class="actions"><button id="copy" type="button" class="primary" disabled>复制完整选择清单</button><button id="download" type="button" disabled>下载同一清单 JSON</button></div>
+ <div id="copy-message" class="small" role="status" aria-live="polite"></div>
+</section>
+<div id="cards"></div>
+<details class="coverage"><summary id="coverage-title">逐人覆盖记录与素材索引</summary><p class="small" id="scope"></p><div class="table-wrap"><table><thead><tr><th>图片／人物</th><th>面料质感</th><th>商品结构</th><th>Logo</th><th>脸部</th></tr></thead><tbody id="coverage-body"></tbody></table></div><h2>图片与实拍参考</h2><div class="scene-grid" id="scene-grid"></div></details>
+<footer id="disclaimer">模型目视判断，建议人工复核。</footer>
+</main><script type="application/json" id="review-data">__REVIEW_DATA__</script><script>__REVIEW_SCRIPT__</script></body></html>
