@@ -1,7 +1,8 @@
 {
-  "date": "2026-11-19",
-  "core_skill_groups": 14,
-  "source_directories": 20,
+  "date": "2026-11-23",
+  "baseline_commit": "d074dfa9f89123af2f32fdd5e1c9361503ec3c5e",
+  "core_skill_groups": 16,
+  "source_directories": 22,
   "entries": [
     {
       "id": "ai-case-evidence",
@@ -58,6 +59,20 @@
       "version": "本机当前快照",
       "state": "source_snapshot",
       "path": "kkc/skills/ecom-color-scene-swap"
+    },
+    {
+      "id": "ecom-face-smile-edit",
+      "name": "指定模特换笑脸",
+      "version": "本机当前快照",
+      "state": "source_snapshot",
+      "path": "kkc/skills/ecom-face-smile-edit"
+    },
+    {
+      "id": "ecom-hat-wind-retouch",
+      "name": "防晒帽减风精修",
+      "version": "本机当前快照",
+      "state": "source_snapshot",
+      "path": "kkc/skills/ecom-hat-wind-retouch"
     },
     {
       "id": "ecom-image-pipeline",
@@ -117,9 +132,9 @@
     },
     {
       "id": "skc-ghost-mannequin",
-      "name": "服装空模SKC（草案）",
+      "name": "服装空模 SKC 与清晰度处理（逐图验收）",
       "version": "本机当前快照",
-      "state": "draft",
+      "state": "source_snapshot",
       "path": "kkc/skills/skc-ghost-mannequin"
     },
     {
@@ -146,156 +161,106 @@
   ],
   "changed_skills": [
     {
-      "id": "ai-product-image-diff",
-      "source": "C:\\Users\\Administrator\\.codex\\skills\\ai-product-image-diff",
+      "id": "ecom-face-smile-edit",
       "changed_files": [
         "SKILL.md",
         "agents/openai.yaml",
-        "assets/bulk-review.html",
-        "assets/bulk-review.js",
-        "references/bulk-selection.md",
-        "references/fabric-quality.md",
-        "references/repair-workflow.md",
-        "references/review-contract.md",
-        "scripts/build_bulk_review.py",
-        "scripts/review_contract.py",
-        "tests/bulk-review.test.js",
-        "scripts/tests/test_review_contract.py"
+        "references/compositing.md",
+        "references/prompts.md",
+        "scripts/audit_composite.py"
       ]
     },
     {
-      "id": "codex-chat-windows-to-mac-migration",
-      "source": "C:\\Users\\Administrator\\.codex\\skills\\codex-chat-windows-to-mac-migration",
-      "changed_files": [
-        ".kocotree-skill.json",
-        "SKILL.md",
-        "agents/openai.yaml",
-        "references/SOP.md",
-        "scripts/export-codex-chats-for-mac.ps1",
-        "scripts/restore-codex-chats-mac.sh"
-      ]
-    },
-    {
-      "id": "ecom-video-prompt-v2",
-      "source": "C:\\Users\\Administrator\\.codex\\skills\\ecom-video-prompt-v2",
-      "changed_files": [
-        "SKILL.md"
-      ]
-    },
-    {
-      "id": "fabric-texture-repair",
-      "source": "C:\\Users\\Administrator\\.codex\\skills\\fabric-texture-repair",
+      "id": "ecom-hat-wind-retouch",
       "changed_files": [
         "SKILL.md",
         "agents/openai.yaml",
-        "references/check.md",
-        "references/repair.md",
-        "references/tools.md",
-        "scripts/fabric_tools.py",
-        "scripts/psd_pair.py",
-        "scripts/selftest.py"
-      ]
-    },
-    {
-      "id": "kocotree-visual-review",
-      "source": "C:\\Users\\Administrator\\.codex\\skills\\kocotree-visual-review",
-      "changed_files": [
-        "SKILL.md",
-        "assets/review-template.json",
-        "references/case-library.md",
-        "references/feishu-sync.md",
-        "references/record-schema.md",
-        "scripts/build_case_library.py",
-        "scripts/search_cases.py",
-        "scripts/test_case_library.py",
-        "scripts/test_validate_review.py",
-        "scripts/validate_review.py"
-      ]
-    },
-    {
-      "id": "super-token-saver",
-      "source": "C:\\Users\\Administrator\\.codex\\skills\\super-token-saver",
-      "changed_files": [
-        "LICENSE",
-        "THIRD-PARTY-NOTICES.md",
-        "scripts/list-sessions.js",
-        "scripts/preprocess.js",
-        "scripts/restore-ledger.js",
-        "scripts/restore.js",
-        "scripts/transcript-lines.js",
-        "scripts/lib/accounts.js",
-        "scripts/lib/cache-paths.js",
-        "scripts/lib/codex-transcript.js",
-        "skills/s-compact/SKILL.md",
-        "skills/s-continue/SKILL.md"
-      ]
-    },
-    {
-      "id": "token-saver",
-      "source": "C:\\Users\\Administrator\\.codex\\skills\\token-saver",
-      "changed_files": [
-        "LICENSE",
-        "SKILL.md"
-      ]
-    },
-    {
-      "id": "chutu-baidi-touming",
-      "source": "C:\\Users\\Administrator\\.agents\\skills\\chutu-baidi-touming",
-      "changed_files": [
-        "SKILL.md",
-        "scripts/bg_assets.py",
-        "scripts/image_size_limit.py",
-        "scripts/launch.py",
-        "scripts/run_bg.ps1",
-        "scripts/selftest.py",
-        "scripts/selftest_image_size.py"
-      ]
-    },
-    {
-      "id": "chutu-chicun-tiaozheng",
-      "source": "C:\\Users\\Administrator\\.agents\\skills\\chutu-chicun-tiaozheng",
-      "changed_files": [
-        "scripts/delivery_notes.py"
-      ]
-    },
-    {
-      "id": "ecom-image-pipeline",
-      "source": "C:\\Users\\Administrator\\.agents\\skills\\ecom-image-pipeline",
-      "changed_files": [
-        "SKILL.md",
-        "agents/openai.yaml"
+        "references/local-retouch.md",
+        "scripts/verify_exports.py"
       ]
     },
     {
       "id": "skc-ghost-mannequin",
-      "source": "C:\\Users\\Administrator\\Documents\\ChatGPT\\设计skill\\skc-ghost-mannequin",
       "changed_files": [
         "SKILL.md",
-        "references/imagegen-and-qa.md"
+        "licenses/ncnn-BSD.txt",
+        "licenses/Real-ESRGAN-ncnn-vulkan-MIT.txt",
+        "licenses/UltraSharp-author-model-card.md",
+        "licenses/UltraSharp-CC-BY-NC-SA-4.0.txt",
+        "references/historical-zipper-preset.json",
+        "references/imagegen-and-qa.md",
+        "references/real-image-regression.md",
+        "references/regional-definition-regression.md",
+        "references/regional-definition.md",
+        "references/super-clarity.md",
+        "references/tested-lavender-material-profile.json",
+        "references/tested-regional-profile.json",
+        "references/third-party.md",
+        "runtime/windows-x64/README_windows.md",
+        "runtime/windows-x64/realesrgan-ncnn-vulkan.exe",
+        "runtime/windows-x64/vcomp140.dll",
+        "runtime/windows-x64/models/ultrasharp-4x.bin",
+        "runtime/windows-x64/models/ultrasharp-4x.param",
+        "scripts/Invoke-AiCandidate.ps1",
+        "scripts/Invoke-PhotoshopJob.ps1",
+        "scripts/Invoke-RegionalDefinition.ps1",
+        "scripts/Invoke-WholeImage.ps1",
+        "scripts/Invoke-Zipper.ps1",
+        "scripts/material-safe.jsx",
+        "scripts/prepare_profile.py",
+        "scripts/regional-definition.jsx",
+        "scripts/resize-export.jsx",
+        "scripts/verify_output.py",
+        "scripts/zipper-in-place.jsx"
       ]
     }
   ],
   "unchanged_skills": [
     "ai-case-evidence",
+    "ai-product-image-diff",
+    "chutu-baidi-touming",
     "chutu-baidi-touming-v2",
+    "chutu-chicun-tiaozheng",
+    "chutu-chicun-tiaozheng-single",
+    "codex-chat-windows-to-mac-migration",
     "ecom-color-scene-swap",
+    "ecom-image-pipeline",
     "ecom-video-prompt",
+    "ecom-video-prompt-v2",
+    "fabric-texture-repair",
+    "kocotree-visual-review",
     "lovart-apparel-prompt",
     "product-selection-psd",
     "replace-images-by-name",
+    "super-token-saver",
+    "token-saver",
     "visual-detail-image-processor"
   ],
+  "workbench_changed_files": [
+    "app.py",
+    "live_preview.py",
+    "README.md",
+    "workbench.py",
+    "engine/manifest_workbench.jsx",
+    "engine/template_manifest.jsx"
+  ],
   "workbench_release": {
-    "version": "0.5.13",
+    "version": "0.5.14",
     "templates": 5,
-    "filename": "DetailWorkbench-v0.5.13-Windows-5-templates.zip",
-    "bytes": 766715603,
-    "sha256": "b76813d22f33ef07730872c57ee4b3ef2c7d45207f97d751499e0fdee307189d",
-    "download_url": "https://github.com/ssjsjdjj/codex-image-skills/releases/download/kkc-2026-11-19/DetailWorkbench-v0.5.13-Windows-5-templates.zip",
-    "release_url": "https://github.com/ssjsjdjj/codex-image-skills/releases/tag/kkc-2026-11-19",
-    "installation": "完整解压后按随包安装说明安装。需要Windows和Photoshop。"
+    "filename": "DetailWorkbench-v0.5.14-Windows-5-templates.zip",
+    "bytes": 766718298,
+    "sha256": "0101bbe44f1d1b48927f29f650a4edb623e1aeaee82e221e7df7626327636153",
+    "release_url": "https://github.com/ssjsjdjj/codex-image-skills/releases/tag/kkc-2026-11-23",
+    "download_url": "https://github.com/ssjsjdjj/codex-image-skills/releases/download/kkc-2026-11-23/DetailWorkbench-v0.5.14-Windows-5-templates.zip",
+    "installation": "完整解压，按随附说明安装；需要 Windows、Python 和 Photoshop。",
+    "acceptance_status": "迁移验收未完成；部分项目已有通过证据，按 M01–M06 继续验收。"
   },
   "files": [
+    {
+      "path": "kkc/CHANGELOG-2026-11-23.md",
+      "bytes": 2168,
+      "sha256": "9555fb2bf5d7765ca83e6eb844fea43458668b6bad0a6292eda38fa1bc5b8d60"
+    },
     {
       "path": "kkc/packages/ai-case-evidence.zip",
       "bytes": 58923,
@@ -342,9 +307,24 @@
       "sha256": "315016b06dd10ff43315364486296cb4151a87a3a0a05a345b6cad473362b7f5"
     },
     {
+      "path": "kkc/packages/detail-workbench-v0.5.14-安装与验收说明.txt",
+      "bytes": 17954,
+      "sha256": "2870d3a9b8dbf2a0ca77a615b5020348a669432c51dd0d9e8f88132c2509d951"
+    },
+    {
+      "path": "kkc/packages/detail-workbench-v0.5.14-迁移剩余验收任务.txt",
+      "bytes": 6715,
+      "sha256": "087b4608d3f13d0459591ca813f831a19e4d794daf2f802e001583e9739dd200"
+    },
+    {
+      "path": "kkc/packages/detail-workbench-v0.5.14.json",
+      "bytes": 680,
+      "sha256": "018906fca7168c4bda2fab36c80f4c41a473e70bd8ddbba64aa9e03a0aeff79b"
+    },
+    {
       "path": "kkc/packages/detail-workbench-安装说明.md",
-      "bytes": 3043,
-      "sha256": "cc81cfa1290157d584895dab453d0e22ab0c3ac6457a9f5adfecbee488d3f476"
+      "bytes": 738,
+      "sha256": "53b45a5690eaad692b5b731144d81f043b00675cb203092569acbc1085c09987"
     },
     {
       "path": "kkc/packages/DetailWorkbench-v0.5.11-Windows-5-templates.zip.sha256",
@@ -357,9 +337,24 @@
       "sha256": "75c227f1f209d270706b830e62b5a105e8b5fae4d57d9b5cfdf0c5a041524725"
     },
     {
+      "path": "kkc/packages/DetailWorkbench-v0.5.14-Windows-5-templates.zip.sha256",
+      "bytes": 115,
+      "sha256": "a3fca4349e4c369809d0980e238e69f19292c4377d40dac242b609a8bb22cbaf"
+    },
+    {
       "path": "kkc/packages/ecom-color-scene-swap.zip",
       "bytes": 5787,
       "sha256": "8631fa596a1176fa0cac5e65ce9c9d39232d7102bca87fce412be0685f31fabd"
+    },
+    {
+      "path": "kkc/packages/ecom-face-smile-edit.zip",
+      "bytes": 10497,
+      "sha256": "32a5f5e221f2d96673cbc36cae5c30cd95893de88685a349a01461a0cea7a3eb"
+    },
+    {
+      "path": "kkc/packages/ecom-hat-wind-retouch.zip",
+      "bytes": 7390,
+      "sha256": "fd8e10620272514f419364a4ffa94ecb63da0d4aeb8332588e3b38884f3cbed7"
     },
     {
       "path": "kkc/packages/ecom-image-pipeline.zip",
@@ -403,8 +398,8 @@
     },
     {
       "path": "kkc/packages/skc-ghost-mannequin.zip",
-      "bytes": 3907,
-      "sha256": "d3b34d129ae7cef8faf4de1ffb4e7711ff992df8032f25cdb828031c5b0dd5ca"
+      "bytes": 33087475,
+      "sha256": "57f3f9a58c99c1a7004e1cb7d903aea12f9df96f61f49fe9af6892e45cf5d7c9"
     },
     {
       "path": "kkc/packages/super-token-saver.zip",
@@ -423,8 +418,8 @@
     },
     {
       "path": "kkc/README.md",
-      "bytes": 4966,
-      "sha256": "6c59265d4edc63f9916c103f356aaa049e6e236a3b1ff6f6cb40acf5ec46678a"
+      "bytes": 4439,
+      "sha256": "c293174fb34d477e35619785388a6e79ffbd64a0e4b20207c021d6fc7e0e0386"
     },
     {
       "path": "kkc/skills/ai-case-evidence/agents/openai.yaml",
@@ -1032,6 +1027,51 @@
       "sha256": "e20cb900c787a7cd57623ad790b4bd54e09b884502a60caf0fd6434e10aa6177"
     },
     {
+      "path": "kkc/skills/ecom-face-smile-edit/agents/openai.yaml",
+      "bytes": 379,
+      "sha256": "48161bda7ab6a82a8403b7eaae691085ab73618de3695754326ae26f069c051c"
+    },
+    {
+      "path": "kkc/skills/ecom-face-smile-edit/references/compositing.md",
+      "bytes": 3855,
+      "sha256": "996de571cdfd3c8208df7d9cf64b24949d0d4f91b4161d2fcb7dbe69a2c58b98"
+    },
+    {
+      "path": "kkc/skills/ecom-face-smile-edit/references/prompts.md",
+      "bytes": 4012,
+      "sha256": "df617f0b3c3aea10adf2ffe8d171f5f03899e4c7f88260560eb88653f9eab04c"
+    },
+    {
+      "path": "kkc/skills/ecom-face-smile-edit/scripts/audit_composite.py",
+      "bytes": 3528,
+      "sha256": "013f9d08318e46aa1e32821c08678216f210d5407c49eb3bca89fe74aa328e74"
+    },
+    {
+      "path": "kkc/skills/ecom-face-smile-edit/SKILL.md",
+      "bytes": 7262,
+      "sha256": "78e9f86abd846926cfde1bb489a077c78c7ae8a83b62b0e5753044294a1409ee"
+    },
+    {
+      "path": "kkc/skills/ecom-hat-wind-retouch/agents/openai.yaml",
+      "bytes": 295,
+      "sha256": "7e62cdbee328db9c1498d3b3e604db7ab625cc726c8d938c9637d7c3c19d5b2d"
+    },
+    {
+      "path": "kkc/skills/ecom-hat-wind-retouch/references/local-retouch.md",
+      "bytes": 4074,
+      "sha256": "226067a91e232fc14aaceb059061a2a932fc69231ea115ae078f1e2bc10895e0"
+    },
+    {
+      "path": "kkc/skills/ecom-hat-wind-retouch/scripts/verify_exports.py",
+      "bytes": 4573,
+      "sha256": "c2b147f9555f9ab220cda09990dcce08289b01de4dacddd01dd63db122dec519"
+    },
+    {
+      "path": "kkc/skills/ecom-hat-wind-retouch/SKILL.md",
+      "bytes": 4154,
+      "sha256": "471b744f4d452ec316a8fcb739e209aca87beb9f42d002922b532c403f1cf856"
+    },
+    {
       "path": "kkc/skills/ecom-image-pipeline/agents/openai.yaml",
       "bytes": 147,
       "sha256": "68e50224240a063fe5e169cf04387d3dec88103a21f0ace8e70c243a31283a1b"
@@ -1222,14 +1262,159 @@
       "sha256": "faf29ff98847fdd65acc7ded0eaab807ebcdc628b3b55efc9c4263605da3e79e"
     },
     {
+      "path": "kkc/skills/skc-ghost-mannequin/licenses/ncnn-BSD.txt",
+      "bytes": 6427,
+      "sha256": "7c974bac98848df46be1af5bdaa3c3c9c01f6082a90f55caeb7f60c6208aa255"
+    },
+    {
+      "path": "kkc/skills/skc-ghost-mannequin/licenses/Real-ESRGAN-ncnn-vulkan-MIT.txt",
+      "bytes": 2228,
+      "sha256": "5abb941454de437b0e90d78dcb72e3688f74e14bcd4e24393273cb5cd0e9c937"
+    },
+    {
+      "path": "kkc/skills/skc-ghost-mannequin/licenses/UltraSharp-author-model-card.md",
+      "bytes": 1613,
+      "sha256": "7dbadac287ee2c28fb3e55a89d0f2143fd18580203df299bad56e7c06c65440b"
+    },
+    {
+      "path": "kkc/skills/skc-ghost-mannequin/licenses/UltraSharp-CC-BY-NC-SA-4.0.txt",
+      "bytes": 20850,
+      "sha256": "e66c269d4819aaab34b49ef5220c4ddab6756f21bb5180761a4eb8561f2b7bbd"
+    },
+    {
+      "path": "kkc/skills/skc-ghost-mannequin/references/historical-zipper-preset.json",
+      "bytes": 1243,
+      "sha256": "371e76970d8efd7c7d22b77e814e02c5502559f87921f1d60d6086c5879cc740"
+    },
+    {
       "path": "kkc/skills/skc-ghost-mannequin/references/imagegen-and-qa.md",
-      "bytes": 2198,
-      "sha256": "9b705f9b27b9989e0ffaf0158b1c8ea05a1a26a4b4e6c834c4265bcc50c3939c"
+      "bytes": 2858,
+      "sha256": "31ee08bb9879d333244f64c54a6223c0f172361e535760170e7280eaf5019feb"
+    },
+    {
+      "path": "kkc/skills/skc-ghost-mannequin/references/real-image-regression.md",
+      "bytes": 2134,
+      "sha256": "00493871c8a1168f9e6ca3ba58252b94456319ccae4a44073d9d790095e999a9"
+    },
+    {
+      "path": "kkc/skills/skc-ghost-mannequin/references/regional-definition-regression.md",
+      "bytes": 2046,
+      "sha256": "72ac91f7a39dd690d1b18ad3d19b01e2aea9e7eb22f27bc5987d982fe3cb417e"
+    },
+    {
+      "path": "kkc/skills/skc-ghost-mannequin/references/regional-definition.md",
+      "bytes": 4757,
+      "sha256": "b3016293e1bf333adcbd2ad3cb2b314da1f7ed42c171c6b44d67f25ccbef7c94"
+    },
+    {
+      "path": "kkc/skills/skc-ghost-mannequin/references/super-clarity.md",
+      "bytes": 6862,
+      "sha256": "e56fddf54e6e0d13a1784a478d5b26661cd21d10c21dd97c7d76126d61fa5f89"
+    },
+    {
+      "path": "kkc/skills/skc-ghost-mannequin/references/tested-lavender-material-profile.json",
+      "bytes": 3288,
+      "sha256": "53e2b64e092b0e3e78b9130dc31c7a82f52a1f7af3e897bc0851d774423e5246"
+    },
+    {
+      "path": "kkc/skills/skc-ghost-mannequin/references/tested-regional-profile.json",
+      "bytes": 7414,
+      "sha256": "179767a096e51df4c1fc540fb170d5b342c0cc8d8fd4f9dbe9d73bccc7d28966"
+    },
+    {
+      "path": "kkc/skills/skc-ghost-mannequin/references/third-party.md",
+      "bytes": 1958,
+      "sha256": "03bc21be1131a2d8f2c6ddb083e160fb2eaf988a3f694c9a93a70bd4a387da33"
+    },
+    {
+      "path": "kkc/skills/skc-ghost-mannequin/runtime/windows-x64/models/ultrasharp-4x.bin",
+      "bytes": 33424520,
+      "sha256": "fb3e279d40d4cddb44db4e684d59e68d0aa39852c8cc14dc3f23ccc7e6eee9c1"
+    },
+    {
+      "path": "kkc/skills/skc-ghost-mannequin/runtime/windows-x64/models/ultrasharp-4x.param",
+      "bytes": 116029,
+      "sha256": "0136ca83686809a8f17f7111f11b951e8db93610e24b7f4137c9ffe4dbc4a806"
+    },
+    {
+      "path": "kkc/skills/skc-ghost-mannequin/runtime/windows-x64/README_windows.md",
+      "bytes": 1859,
+      "sha256": "2b882314a0c7a9f17a347b9b04f909939f6274aa96cf5b2ebba2f7ab75987480"
+    },
+    {
+      "path": "kkc/skills/skc-ghost-mannequin/runtime/windows-x64/realesrgan-ncnn-vulkan.exe",
+      "bytes": 6161408,
+      "sha256": "07e49f7cbb4ede01ae4dd4c399d3a7e5846e3d2085c3128eff881e55cb7b1a0c"
+    },
+    {
+      "path": "kkc/skills/skc-ghost-mannequin/runtime/windows-x64/vcomp140.dll",
+      "bytes": 182704,
+      "sha256": "8f72ef2e483465444b2059fc6744d6cb22cd8d8a27f6fa56befd2a42dcd0f78b"
+    },
+    {
+      "path": "kkc/skills/skc-ghost-mannequin/scripts/Invoke-AiCandidate.ps1",
+      "bytes": 3803,
+      "sha256": "1fc17f9b44eab95b697ff4476633a4e1e45ee262e5b5c3621dc43e60c9353aae"
+    },
+    {
+      "path": "kkc/skills/skc-ghost-mannequin/scripts/Invoke-PhotoshopJob.ps1",
+      "bytes": 805,
+      "sha256": "22242a070e9d975f3190d8a4ae1ee61f03c6a6e69d6134dc2070ba6dcc0923ba"
+    },
+    {
+      "path": "kkc/skills/skc-ghost-mannequin/scripts/Invoke-RegionalDefinition.ps1",
+      "bytes": 2903,
+      "sha256": "288e6237c6306c300922094bc953c278df62d1d227b2a7af744b2555deea4c25"
+    },
+    {
+      "path": "kkc/skills/skc-ghost-mannequin/scripts/Invoke-WholeImage.ps1",
+      "bytes": 3492,
+      "sha256": "57415aab488ee0bdf53b07a8a098d9c05fddab7298fb40634bcdafbaa4d602f9"
+    },
+    {
+      "path": "kkc/skills/skc-ghost-mannequin/scripts/Invoke-Zipper.ps1",
+      "bytes": 2229,
+      "sha256": "c3c56c5c2c8010cb91dac88b75a9753fe10144da823b0babf36daacb77425cd5"
+    },
+    {
+      "path": "kkc/skills/skc-ghost-mannequin/scripts/material-safe.jsx",
+      "bytes": 8227,
+      "sha256": "41d2935b7e1636e8df0f8e120afa45e20dd9e8f766d0a1bec588d34bb2b8f65c"
+    },
+    {
+      "path": "kkc/skills/skc-ghost-mannequin/scripts/prepare_profile.py",
+      "bytes": 1610,
+      "sha256": "1150974fd2115fba4eb75e7529906c88d77a0068148305b4c88e9ac7b3afc858"
+    },
+    {
+      "path": "kkc/skills/skc-ghost-mannequin/scripts/regional-definition.jsx",
+      "bytes": 7390,
+      "sha256": "80c59e730e556813f01fd275f727e8952a246731f2cf87c13498a1f6ca316329"
+    },
+    {
+      "path": "kkc/skills/skc-ghost-mannequin/scripts/resize-export.jsx",
+      "bytes": 1782,
+      "sha256": "65e75c3a8b8a7f1d2f3da7f6b3890e452278b5135ade3dc19c1fa70ba80a2df9"
+    },
+    {
+      "path": "kkc/skills/skc-ghost-mannequin/scripts/verify_output.py",
+      "bytes": 4479,
+      "sha256": "f8bc73da5b6ab39c8a072c71026f9181ff424b7fcc1ade0b81020cf430d7d483"
+    },
+    {
+      "path": "kkc/skills/skc-ghost-mannequin/scripts/zipper-in-place.jsx",
+      "bytes": 5035,
+      "sha256": "b786dd8d64a8be77ebfd0343d233f18ad3e0bc5aa7650448188e9aa210b028e9"
+    },
+    {
+      "path": "kkc/skills/skc-ghost-mannequin/SHA256SUMS.json",
+      "bytes": 3238,
+      "sha256": "04e9400018f90105c6d8fec04a02dfdb0d1563a99b107782889b00840fe3d601"
     },
     {
       "path": "kkc/skills/skc-ghost-mannequin/SKILL.md",
-      "bytes": 4025,
-      "sha256": "285e49ca23197b0eb08967acef0d380378c8b19f0eb0b7342e7c6597043f3eac"
+      "bytes": 6458,
+      "sha256": "ae8244e227b5ad369eccbdd6619332cfc1e7e03340d8d95a69bc1f8f8cc304f6"
     },
     {
       "path": "kkc/skills/super-token-saver/LICENSE",
@@ -1514,7 +1699,7 @@
     {
       "path": "kkc/workbenches/detail-workbench/app.py",
       "bytes": 103649,
-      "sha256": "07c2b2b09fcb8beca8537b0cf55b05993d3f08636faca5b6003f9384a1a3540c"
+      "sha256": "d46868a3a19560ea08c822b568089fb3e967c8484d4d2becf248ea43e5407ffc"
     },
     {
       "path": "kkc/workbenches/detail-workbench/crop_editor.py",
@@ -1543,8 +1728,8 @@
     },
     {
       "path": "kkc/workbenches/detail-workbench/engine/manifest_workbench.jsx",
-      "bytes": 52301,
-      "sha256": "7c48b41fae968f8c0cb09597d39793bf3961f69b4dc6c4945f32ab652390695c"
+      "bytes": 56359,
+      "sha256": "de8879dd6ec6935024effa65419ec3b93803a8fbb2dfede22c90fe57f5fdb1ae"
     },
     {
       "path": "kkc/workbenches/detail-workbench/engine/mixed_detail_fonts.jsx",
@@ -1573,8 +1758,8 @@
     },
     {
       "path": "kkc/workbenches/detail-workbench/engine/template_manifest.jsx",
-      "bytes": 81087,
-      "sha256": "6a8c2b1c941dd1beebbe0f74b9971e797911e6fddcf3cd344a783bc3d8c81929"
+      "bytes": 82039,
+      "sha256": "64110babd55c62b6875c662de85c3dd5ec8380fa3090e32f226adcc718ea193c"
     },
     {
       "path": "kkc/workbenches/detail-workbench/engine/template_reference.jsx",
@@ -1633,8 +1818,8 @@
     },
     {
       "path": "kkc/workbenches/detail-workbench/live_preview.py",
-      "bytes": 80595,
-      "sha256": "481cd52c03f14d8e852ce6f2b1aa45cb533c96bbb54f9f3df2b5bcbf5657b914"
+      "bytes": 83685,
+      "sha256": "16411d6667ebad799373e71bec761ea632cdaade7238da1655c9cfdfe514cbbc"
     },
     {
       "path": "kkc/workbenches/detail-workbench/package_io.py",
@@ -1653,8 +1838,8 @@
     },
     {
       "path": "kkc/workbenches/detail-workbench/README.md",
-      "bytes": 11781,
-      "sha256": "3284c0fa232f7d9d4c8ff11a1a349c12cc454ba751e5f2982bd7196c1755de02"
+      "bytes": 12063,
+      "sha256": "c2f53615e23d30d6f7057f99aeb3dd7fd14b56e38e233546875abbd2c58714bd"
     },
     {
       "path": "kkc/workbenches/detail-workbench/refresh_session.py",
@@ -1688,9 +1873,8 @@
     },
     {
       "path": "kkc/workbenches/detail-workbench/workbench.py",
-      "bytes": 30859,
-      "sha256": "f142b61f31c164d680297cec21ec7be98bfa5e3b6adab140bd52d7bac06f8781"
+      "bytes": 32062,
+      "sha256": "1713a296913e4fe289370fc3ae6aa3fee995fcf234b927583e64fcd26d5a8726"
     }
-  ],
-  "installation_note": "2026-11-19补正完整五母版迁移说明，区分Release完整包、仓库源码ZIP及无母版程序包。"
+  ]
 }

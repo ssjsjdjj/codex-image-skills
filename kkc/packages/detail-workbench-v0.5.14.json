@@ -1,0 +1,11 @@
+{
+  "version": "0.5.14",
+  "templates": 5,
+  "filename": "DetailWorkbench-v0.5.14-Windows-5-templates.zip",
+  "bytes": 766718298,
+  "sha256": "0101bbe44f1d1b48927f29f650a4edb623e1aeaee82e221e7df7626327636153",
+  "release_url": "https://github.com/ssjsjdjj/codex-image-skills/releases/tag/kkc-2026-11-23",
+  "download_url": "https://github.com/ssjsjdjj/codex-image-skills/releases/download/kkc-2026-11-23/DetailWorkbench-v0.5.14-Windows-5-templates.zip",
+  "installation": "完整解压，按随附说明安装；需要 Windows、Python 和 Photoshop。",
+  "acceptance_status": "迁移验收未完成；部分项目已有通过证据，按 M01–M06 继续验收。"
+}

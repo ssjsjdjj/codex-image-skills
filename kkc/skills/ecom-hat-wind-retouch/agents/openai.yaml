@@ -1,0 +1,4 @@
+interface:
+  display_name: "防晒帽减风精修"
+  short_description: "基于实拍局部调整防晒帽风感，保留包边、面料与原有商品细节"
+  default_prompt: "用 $ecom-hat-wind-retouch 根据同款实拍局部调整这组防晒帽的风感，保留原片的商品细节。"

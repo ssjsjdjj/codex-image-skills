@@ -1,0 +1,171 @@
+{
+  "schema": 2,
+  "case_id": "lavender-vest-artifact-regression-20261119",
+  "source_sha256": "f96f0435dca5743acd47b3c4ce996d4fe00fd34efffa0b6eaa4eef66815390fa",
+  "candidate_sha256": "3415deee910ac4daa223aa1b52af0028b6d9db220e11198fc0c6cfbb701df136",
+  "reference_size": [
+    3000,
+    4500
+  ],
+  "output_size": [
+    3000,
+    4500
+  ],
+  "candidate_review": {
+    "status": "approved_for_regions",
+    "notes": "Earlier saved full-image candidate compared with unenhanced image and real photo. Only plain body panels approved at low contribution. Mesh, hood, seams and logo excluded. Current attached coarse-crosshatch result rejected."
+  },
+  "ai_opacity": 25,
+  "feather_px": 16,
+  "ai_regions": [
+    {
+      "id": "plain_body_left",
+      "material": "plain nylon-like visible fabric",
+      "review": "approved",
+      "notes": "No new coarse mesh or black seam at the proposed low-strength region; excludes shoulder/collar/hem.",
+      "polygon": [
+        [
+          690,
+          1815
+        ],
+        [
+          1260,
+          1815
+        ],
+        [
+          1260,
+          3740
+        ],
+        [
+          690,
+          3740
+        ]
+      ]
+    },
+    {
+      "id": "plain_body_right",
+      "material": "plain visible main fabric",
+      "review": "approved",
+      "notes": "Inside main body panel, away from zipper and side mesh.",
+      "polygon": [
+        [
+          1470,
+          1820
+        ],
+        [
+          2000,
+          1880
+        ],
+        [
+          2000,
+          3740
+        ],
+        [
+          1470,
+          3740
+        ]
+      ]
+    }
+  ],
+  "protected_regions": [
+    {
+      "id": "hood_binding_and_shoulder",
+      "polygon": [
+        [
+          520,
+          180
+        ],
+        [
+          2450,
+          180
+        ],
+        [
+          2450,
+          1725
+        ],
+        [
+          520,
+          1725
+        ]
+      ]
+    },
+    {
+      "id": "side_mesh_and_armhole",
+      "polygon": [
+        [
+          2030,
+          1500
+        ],
+        [
+          2460,
+          1500
+        ],
+        [
+          2460,
+          3970
+        ],
+        [
+          2030,
+          3970
+        ]
+      ]
+    },
+    {
+      "id": "logo_and_arrows",
+      "polygon": [
+        [
+          1060,
+          1960
+        ],
+        [
+          1195,
+          1960
+        ],
+        [
+          1195,
+          2710
+        ],
+        [
+          1060,
+          2710
+        ]
+      ]
+    }
+  ],
+  "zipper": {
+    "id": "original_zipper",
+    "enabled": true,
+    "polygon": [
+      [
+        1325,
+        1710
+      ],
+      [
+        1355,
+        1710
+      ],
+      [
+        1407,
+        1752
+      ],
+      [
+        1412,
+        3874
+      ],
+      [
+        1322,
+        3874
+      ],
+      [
+        1320,
+        1801
+      ]
+    ],
+    "feather_px": 2,
+    "amount": 80,
+    "radius_px": 0.65,
+    "threshold": 3,
+    "opacity": 70
+  },
+  "notes": "Case-specific coordinates and strengths. Do not reuse on other products without relocation and inspection. No standalone zipper or generated replacement asset."
+}

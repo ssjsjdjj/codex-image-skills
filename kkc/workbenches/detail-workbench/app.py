@@ -35,7 +35,7 @@ FONT = "Microsoft YaHei UI"
 IMAGE_FILTER = [("图片", "*.png *.jpg *.jpeg")]
 DEMO = ROOT.parent / "work/KQ26169-psd/product_data.json"
 PACKAGE_CACHE = ROOT.parent / "work/detail-workbench-packages"
-APP_VERSION = "0.5.13"
+APP_VERSION = "0.5.14"
 
 
 def program_stamp():

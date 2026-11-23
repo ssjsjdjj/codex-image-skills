@@ -1,0 +1,403 @@
+{
+  "schema": 3,
+  "baseline_png_sha256": "3ea59d7a0116f055f391b1f270b2e349b1d6c7ca14808c4cbcdb8d972a81969d",
+  "baseline_psd_sha256": "bfba4f1edc256992b42422f420967d9edcc01761c3d48ddc3fb08940b3689908",
+  "reference_size": [
+    3000,
+    4500
+  ],
+  "source_review": {
+    "status": "reviewed_baseline",
+    "notes": "V2 accepted for absence of coarse false texture; user requests additional definition only in existing mesh, hood rim and zipper. Preserve full current composite and all previous PSD layers."
+  },
+  "protected_regions": [
+    {
+      "id": "logo",
+      "polygon": [
+        [
+          1060,
+          1960
+        ],
+        [
+          1195,
+          1960
+        ],
+        [
+          1195,
+          2710
+        ],
+        [
+          1060,
+          2710
+        ]
+      ]
+    }
+  ],
+  "regions": [
+    {
+      "id": "mesh",
+      "notes": "User-authorized existing-pixel definition; no generated or imported replacement texture.",
+      "polygons": [
+        [
+          [
+            2158,
+            2310
+          ],
+          [
+            2220,
+            2368
+          ],
+          [
+            2350,
+            2345
+          ],
+          [
+            2325,
+            3820
+          ],
+          [
+            2085,
+            3840
+          ],
+          [
+            2085,
+            3320
+          ],
+          [
+            2095,
+            2830
+          ],
+          [
+            2118,
+            2490
+          ],
+          [
+            2140,
+            2350
+          ]
+        ],
+        [
+          [
+            2310,
+            1995
+          ],
+          [
+            2324,
+            2100
+          ],
+          [
+            2342,
+            2215
+          ],
+          [
+            2354,
+            2280
+          ],
+          [
+            2330,
+            2310
+          ],
+          [
+            2292,
+            2275
+          ],
+          [
+            2245,
+            2250
+          ],
+          [
+            2282,
+            2180
+          ]
+        ]
+      ],
+      "feather_px": 4,
+      "amount": 220,
+      "radius_px": 0.8,
+      "noise_reduction": 10,
+      "highlight_fade": 10,
+      "highlight_width": 70,
+      "shadow_fade": 10,
+      "shadow_width": 50,
+      "tone_radius": 2,
+      "opacity": 80,
+      "blend": "DARKEN"
+    },
+    {
+      "id": "hood",
+      "notes": "User-authorized existing-pixel definition; no generated or imported replacement texture.",
+      "polygons": [
+        [
+          [
+            1140,
+            405
+          ],
+          [
+            1030,
+            475
+          ],
+          [
+            950,
+            585
+          ],
+          [
+            895,
+            710
+          ],
+          [
+            878,
+            850
+          ],
+          [
+            890,
+            1000
+          ],
+          [
+            925,
+            1155
+          ],
+          [
+            990,
+            1310
+          ],
+          [
+            1060,
+            1450
+          ],
+          [
+            1180,
+            1600
+          ],
+          [
+            1305,
+            1710
+          ],
+          [
+            1250,
+            1570
+          ],
+          [
+            1145,
+            1415
+          ],
+          [
+            1080,
+            1245
+          ],
+          [
+            1020,
+            1085
+          ],
+          [
+            970,
+            940
+          ],
+          [
+            960,
+            800
+          ],
+          [
+            980,
+            660
+          ],
+          [
+            1040,
+            535
+          ],
+          [
+            1145,
+            435
+          ]
+        ],
+        [
+          [
+            1640,
+            420
+          ],
+          [
+            1730,
+            485
+          ],
+          [
+            1800,
+            600
+          ],
+          [
+            1845,
+            760
+          ],
+          [
+            1840,
+            930
+          ],
+          [
+            1810,
+            1090
+          ],
+          [
+            1745,
+            1240
+          ],
+          [
+            1665,
+            1380
+          ],
+          [
+            1550,
+            1520
+          ],
+          [
+            1420,
+            1655
+          ],
+          [
+            1390,
+            1685
+          ],
+          [
+            1435,
+            1615
+          ],
+          [
+            1570,
+            1465
+          ],
+          [
+            1670,
+            1325
+          ],
+          [
+            1745,
+            1170
+          ],
+          [
+            1785,
+            1000
+          ],
+          [
+            1800,
+            835
+          ],
+          [
+            1790,
+            700
+          ],
+          [
+            1755,
+            590
+          ],
+          [
+            1695,
+            500
+          ],
+          [
+            1620,
+            445
+          ]
+        ],
+        [
+          [
+            1095,
+            418
+          ],
+          [
+            1190,
+            375
+          ],
+          [
+            1330,
+            342
+          ],
+          [
+            1485,
+            340
+          ],
+          [
+            1610,
+            365
+          ],
+          [
+            1730,
+            425
+          ],
+          [
+            1710,
+            451
+          ],
+          [
+            1590,
+            408
+          ],
+          [
+            1450,
+            383
+          ],
+          [
+            1300,
+            381
+          ],
+          [
+            1170,
+            422
+          ]
+        ]
+      ],
+      "feather_px": 4,
+      "amount": 280,
+      "radius_px": 1.1,
+      "noise_reduction": 15,
+      "highlight_fade": 10,
+      "highlight_width": 70,
+      "shadow_fade": 10,
+      "shadow_width": 50,
+      "tone_radius": 2,
+      "opacity": 85,
+      "blend": "DARKEN"
+    },
+    {
+      "id": "zipper",
+      "notes": "User-authorized existing-pixel definition; no generated or imported replacement texture.",
+      "polygons": [
+        [
+          [
+            1325,
+            1710
+          ],
+          [
+            1355,
+            1710
+          ],
+          [
+            1407,
+            1752
+          ],
+          [
+            1412,
+            3874
+          ],
+          [
+            1322,
+            3874
+          ],
+          [
+            1320,
+            1801
+          ]
+        ]
+      ],
+      "feather_px": 2,
+      "amount": 320,
+      "radius_px": 1.0,
+      "noise_reduction": 10,
+      "highlight_fade": 10,
+      "highlight_width": 70,
+      "shadow_fade": 10,
+      "shadow_width": 50,
+      "tone_radius": 2,
+      "opacity": 90,
+      "blend": "DARKEN"
+    }
+  ],
+  "trial": "selected_C",
+  "selection_notes": "A/B preserved highlights but definition gain was too weak. C reduces redundant highlight attenuation while keeping DARKEN contribution; inspected mesh, hood and zipper native crops without new coarse grid or bright fringe."
+}

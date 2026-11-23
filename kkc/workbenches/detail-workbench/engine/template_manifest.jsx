@@ -55,11 +55,30 @@ function manifestStyle(layer, doc) {
         result.font = item.font;
         result.size_px = item.size.as("pt") * doc.resolution / 72;
         result.color = [item.color.rgb.red, item.color.rgb.green, item.color.rgb.blue];
-        result.align = item.justification === Justification.RIGHT ? "right" : item.justification === Justification.CENTER ? "center" : "left";
+        if (item.justification === Justification.RIGHT) result.align = "right";
+        else if (item.justification === Justification.CENTER) result.align = "center";
     } catch (error) {
         throw new Error("读取标题样式失败 " + manifestPath(layer).join(" / ") + "，" + error.message);
     }
     return result;
+}
+
+function manifestPreviewTextStyle(layer, doc) {
+    var style = manifestStyle(layer, doc);
+    var key = stringIDToTypeID;
+    var reference = new ActionReference();
+    reference.putProperty(key("property"), key("textKey"));
+    reference.putIdentifier(key("layer"), layer.id);
+    var text = executeActionGet(reference).getObjectValue(key("textKey"));
+    if (text.hasKey(key("transform"))) {
+        var transform = text.getObjectValue(key("transform"));
+        var yx = transform.getDouble(key("yx"));
+        var yy = transform.getDouble(key("yy"));
+        var scale = Math.sqrt(yx * yx + yy * yy);
+        if (!isFinite(scale) || scale <= 0) throw new Error("STEP1 文字变换无效：" + layer.name);
+        style.size_px *= scale;
+    }
+    return style;
 }
 
 function manifestPrefix(path, parent) {
@@ -562,7 +581,10 @@ function manifestProductAttributes(doc, group, panel) {
         var area = manifestRect(badge);
         var style = manifestStyle(value, doc);
         style.align = "center";
+        var previewStyle = manifestPreviewTextStyle(value, doc);
+        previewStyle.align = "center";
         fields[label] = {path: [chip.name, value.name], text: value.textItem.contents, style: style,
+                         preview_style: previewStyle,
                          rect: [area[0] + 6, manifestRect(value)[1] - 4, area[2] - 12, area[3]]};
     }
     for (i = 0; i < labels.length; i++) if (!fields[labels[i]]) return null;

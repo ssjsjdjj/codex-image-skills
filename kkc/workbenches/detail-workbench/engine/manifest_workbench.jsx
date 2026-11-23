@@ -39,8 +39,17 @@ function manifestNativeText(doc, group, name, value, rect, style, fonts) {
         if (lines.length * px * 1.1 > rect[3] + 4) throw new Error("文字超出母版字段，请缩短内容：" + name);
         leading = px * 1.15;
     }
-    var align = style.align === "right" ? Justification.RIGHT : style.align === "center" ? Justification.CENTER : Justification.LEFT;
-    var x = style.align === "right" ? rect[0] + rect[2] : style.align === "center" ? rect[0] + rect[2] / 2 : rect[0];
+    // ExtendScript in Photoshop 2020 evaluates nested conditionals differently
+    // from current JS engines. Keep alignment and its anchor in one branch.
+    var align = Justification.LEFT;
+    var x = rect[0];
+    if (style.align === "right") {
+        align = Justification.RIGHT;
+        x += rect[2];
+    } else if (style.align === "center") {
+        align = Justification.CENTER;
+        x += rect[2] / 2;
+    }
     var face = installedFont([style.font || fonts.cn.postScriptName, fonts.cn.postScriptName]);
     // The shared plan already fits the actual fonts; disable tableText's independent shrink.
     var layer = tableText(group, name, lines.join("\r"), x, rect[1] + px, planned ? 300000 : rect[2], px,
@@ -221,7 +230,11 @@ function manifestRenderProductAttributes(doc, job, verify) {
             if (layer.textItem.contents !== value) throw new Error("STEP1 属性文字核验失败：" + field);
         } else if (layer.textItem.contents !== value) {
             var before = box(layer);
+            var originalName = layer.name;
             layer.textItem.contents = value;
+            // Photoshop auto-renames text layers whose name matches the old
+            // contents. Keep the binding path stable for reopen verification.
+            layer.name = originalName;
             var after = box(layer);
             var dx = (before[0] + before[2] - after[0] - after[2]) / 2;
             if (dx) layer.translate(UnitValue(dx, "px"), UnitValue(0, "px"));
@@ -490,13 +503,13 @@ function manifestRenderSizeNote(doc, job, fonts) {
 
 function manifestRenderViews(doc, job, heroGroup) {
     var count = 0;
+    var prepared = {};
+    // Duplicating a clipping-base frame in Photoshop can detach the photo
+    // already clipped to that prototype. Prepare every frame before any photo.
     for (var key in job.profile.view_slots) {
         var source = job.profile.view_slots[key];
         var target = job.geometry.view_slots[key];
-        if (key === "measurement") {
-            count += manifestRenderMeasurement(doc, job, source, target);
-            continue;
-        }
+        if (key === "measurement") continue;
         if (!target || !target.visible) {
             if (source.path) {
                 var unused = manifestResolvePaths(doc, source.path);
@@ -511,8 +524,18 @@ function manifestRenderViews(doc, job, heroGroup) {
         else if (key === "brand") item = job.brand;
         else item = job.scenes[parseInt(key.split("_")[1], 10) - 1];
         if (!item) continue;
-        var slot = manifestSlotFrame(doc, job, key, heroGroup);
-        workbenchPicture(doc, slot.parent, item, "当前照片 · " + key, target.rect, slot.frame, key);
+        prepared[key] = {slot: manifestSlotFrame(doc, job, key, heroGroup), item: item};
+    }
+    for (key in job.profile.view_slots) {
+        source = job.profile.view_slots[key];
+        target = job.geometry.view_slots[key];
+        if (key === "measurement") {
+            count += manifestRenderMeasurement(doc, job, source, target);
+            continue;
+        }
+        if (!prepared[key]) continue;
+        var slot = prepared[key].slot;
+        workbenchPicture(doc, slot.parent, prepared[key].item, "当前照片 · " + key, target.rect, slot.frame, key);
         count++;
     }
     return count;
@@ -871,6 +894,21 @@ function manifestVerify(doc, job, expectedPhotos) {
         if (layer.kind !== LayerKind.TEXT || layer.textItem.contents.replace(/\r/g, "") !== expected) {
             throw new Error("商品字段与确认数据不符：" + field);
         }
+        var binding = job.profile.fields[field];
+        var plannedField = job.text_layout && job.text_layout["当前商品 · " + field];
+        var fieldRect = plannedField ? plannedField.rect : binding.rect;
+        var expectedAlign = Justification.LEFT;
+        var expectedX = fieldRect[0];
+        if (binding.style && binding.style.align === "right") {
+            expectedAlign = Justification.RIGHT;
+            expectedX += fieldRect[2];
+        } else if (binding.style && binding.style.align === "center") {
+            expectedAlign = Justification.CENTER;
+            expectedX += fieldRect[2] / 2;
+        }
+        if (layer.textItem.justification !== expectedAlign || Math.abs(layer.textItem.position[0].as("px") - expectedX) > 2) {
+            throw new Error("商品字段对齐与预览不符：" + field);
+        }
     }
     var colors = findLayer(doc, manifestFindModule(job.profile, "colors").path);
     if (verifyEmbedded(colors, /^当前色图 · /) !== job.products.length) throw new Error("实际色图数量与商品颜色不符");
@@ -946,6 +984,18 @@ function manifestVerify(doc, job, expectedPhotos) {
     return verification;
 }
 
+function manifestGenerationStage(job, stage) {
+    if (job.cancel && new File(job.cancel).exists) {
+        throw new Error("[GENERATION_CANCELLED] 套版生成已停止等待，请在 Photoshop 恢复后重试生成。");
+    }
+    if (job.progress) {
+        var progress = new File(job.progress);
+        progress.encoding = "UTF8";
+        if (!progress.open("w")) throw new Error("无法写入套版生成进度");
+        try { progress.write(stage); } finally { progress.close(); }
+    }
+}
+
 var manifestBuildContext = null;
 
 function manifestBuildSuspendedDocument() {
@@ -955,27 +1005,35 @@ function manifestBuildSuspendedDocument() {
     var job = context.job;
     var fonts = context.fonts;
     context.stage = "清理原商品数据";
+    manifestGenerationStage(job, context.stage);
     clearManifestData(doc, job.profile, false);
     manifestAssertOldImagesCleared(doc, job.profile);
     context.stage = "应用绿线装饰设置";
+    manifestGenerationStage(job, context.stage);
     manifestDecorationsVisibility(doc, job, false);
     context.stage = "应用统一布局";
+    manifestGenerationStage(job, context.stage);
     applyManifestGeometry(doc, job);
     manifestApplyCompactHelperGeometry(doc, job);
     context.stage = "写入商品资料与颜色";
+    manifestGenerationStage(job, context.stage);
     manifestRenderFields(doc, job, fonts);
     manifestRenderProductAttributes(doc, job, false);
     manifestRenderColors(doc, job, fonts);
     context.stage = "替换表格内芯";
+    manifestGenerationStage(job, context.stage);
     manifestRenderTables(doc, job, fonts);
     context.stage = "应用尺码备注";
+    manifestGenerationStage(job, context.stage);
     manifestRenderSizeNote(doc, job, fonts);
     context.stage = "应用照片取景";
+    manifestGenerationStage(job, context.stage);
     var hero = manifestGeneratedHero(doc, job, fonts);
     context.photoCount = manifestRenderViews(doc, job, hero);
     doc.resizeCanvas(UnitValue(job.geometry.canvas.width, "px"), UnitValue(job.geometry.canvas.height, "px"), AnchorPosition.TOPCENTER);
     manifestClipSceneModule(doc, job);
     context.stage = "清除未使用的模块和图位";
+    manifestGenerationStage(job, context.stage);
     manifestPruneCompactOutput(doc, job);
 }
 
@@ -989,6 +1047,7 @@ function runManifestWorkbench(job) {
     try {
         app.displayDialogs = DialogModes.NO;
         app.preferences.rulerUnits = Units.PIXELS;
+        manifestGenerationStage(job, stage);
         var fonts = loadDetailMixedFonts();
         doc = app.open(new File(job.template));
         var photoCount = 0;
@@ -1003,12 +1062,18 @@ function runManifestWorkbench(job) {
             manifestBuildContext = null;
         }
         stage = "保存并重开源文件";
+        manifestGenerationStage(job, stage);
         saveDetailPsb(new File(job.output));
+        stage = "重开源文件";
+        manifestGenerationStage(job, stage);
         doc.close(SaveOptions.DONOTSAVECHANGES);
+        doc = null;
         doc = app.open(new File(job.output));
         stage = "核验原标题、颜色、表格和尺码区间距";
+        manifestGenerationStage(job, stage);
         var layoutVerification = manifestVerify(doc, job, photoCount);
         stage = "导出整页预览";
+        manifestGenerationStage(job, stage);
         preview = doc.duplicate("详情页工作台预览", true);
         preview.flatten();
         preview.resizeImage(UnitValue(500, "px"), null, null, ResampleMethod.BICUBICSHARPER);
@@ -1026,6 +1091,7 @@ function runManifestWorkbench(job) {
         workbenchActiveJob = null;
         if (prior) { try { app.activeDocument = prior; } catch (priorError) {} }
     }
+    manifestGenerationStage(job, "写入完成核验记录");
     var marker = new File(job.completed);
     if (!marker.open("w")) throw new Error("无法写入详情页核验记录");
     marker.write(String(job.geometry.canvas.height));

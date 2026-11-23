@@ -1,0 +1,62 @@
+{
+  "preset_name": "lavender-vest-tested-in-place-v1",
+  "reference_size": [
+    8662,
+    12994
+  ],
+  "zipper": {
+    "polygon": [
+      [
+        3825,
+        4930
+      ],
+      [
+        3908,
+        4930
+      ],
+      [
+        4060,
+        5055
+      ],
+      [
+        4075,
+        11190
+      ],
+      [
+        3820,
+        11190
+      ],
+      [
+        3815,
+        5200
+      ]
+    ],
+    "feather": 8,
+    "smart_sharpen_amount": 400,
+    "smart_sharpen_radius": 4.8,
+    "noise_reduction": 85,
+    "highlight_fade": 65,
+    "highlight_width": 65,
+    "shadow_fade": 35,
+    "shadow_width": 50,
+    "tone_radius": 2,
+    "usm_amount": 50,
+    "usm_radius": 24,
+    "usm_threshold": 4,
+    "smooth_radius": 1.7,
+    "smooth_threshold": 8,
+    "smooth_opacity": 25
+  },
+  "allowed_box": [
+    3790,
+    4905,
+    4100,
+    11215
+  ],
+  "scope": "Only this full-image composition. Re-locate polygon for other images; no imported or generated zipper assets.",
+  "status": "historical_do_not_autorun",
+  "review": {
+    "status": "historical_only",
+    "notes": "Aggressive parameters from the earlier individual zipper case. Not approved for any new image."
+  }
+}

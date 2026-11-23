@@ -133,7 +133,14 @@ class PreviewPane(ttk.Frame):
         self.original_button.state(["disabled"])
         self.caption = ttk.Label(self, text="预览 · 修改后自动同步", style="Muted.TLabel", wraplength=300)
         self.caption.pack(anchor="w", pady=(4, 8))
-        self.notice = ttk.Label(self, text="", foreground="#9b5428", wraplength=300)
+        self.notice = ttk.Label(self, text="", foreground="#9b5428", wraplength=0, cursor="hand2")
+        self.notice_details = ""
+        self.notice_tip = None
+        self.notice_after = None
+        self.notice.bind("<Enter>", self.queue_notice_details)
+        self.notice.bind("<Leave>", self.hide_notice_details)
+        self.notice.bind("<Unmap>", self.hide_notice_details)
+        self.notice.bind("<ButtonPress>", self.hide_notice_details)
         self.add_scene_button = ttk.Button(self, text="模特图 0/4 · 添加图片", command=self.add_next_scene,
                                           style="PreviewButton.TButton")
         self.add_scene_button.pack(fill="x", pady=(0, 7))
@@ -536,10 +543,43 @@ class PreviewPane(ttk.Frame):
 
     def shutdown(self, event):
         if event.widget is self:
+            self.hide_notice_details()
             for callback in (self.paint_id, self.poll_id):
                 if callback is not None:
                     self.after_cancel(callback)
             self.loader.shutdown(wait=False, cancel_futures=True)
+
+    def queue_notice_details(self, _event=None):
+        self.hide_notice_details()
+        if self.notice_details:
+            self.notice_after = self.after(350, self.show_notice_details)
+
+    def show_notice_details(self):
+        self.notice_after = None
+        if not self.notice_details or not self.notice.winfo_ismapped():
+            return
+        self.hide_notice_details()
+        self.notice_tip = tk.Toplevel(self)
+        self.notice_tip.transient(self.winfo_toplevel())
+        self.notice_tip.overrideredirect(True)
+        self.notice_tip.attributes("-topmost", True)
+        tk.Label(self.notice_tip, text=self.notice_details, justify="left", wraplength=480,
+                 font=(FONT, 10), background="#fff8e8", foreground=INK,
+                 relief="solid", borderwidth=1, padx=10, pady=8).pack()
+        self.notice_tip.update_idletasks()
+        left = min(self.notice.winfo_rootx(), max(0, self.winfo_screenwidth() - self.notice_tip.winfo_reqwidth() - 10))
+        top = min(self.notice.winfo_rooty() + self.notice.winfo_height() + 5,
+                  max(0, self.winfo_screenheight() - self.notice_tip.winfo_reqheight() - 10))
+        self.notice_tip.geometry(f"+{left}+{top}")
+
+    def hide_notice_details(self, _event=None):
+        if self.notice_after is not None:
+            self.after_cancel(self.notice_after)
+            self.notice_after = None
+        if self.notice_tip is not None:
+            if self.notice_tip.winfo_exists():
+                self.notice_tip.destroy()
+            self.notice_tip = None
 
     def load(self, path, full=False):
         key = (str(path), full)
@@ -744,9 +784,12 @@ class PreviewPane(ttk.Frame):
         self.canvas.configure(scrollregion=(0, 0, width, self.content_height))
         self.canvas.yview_moveto(old_top / self.content_height)
         notices = []
+        skipped = {}
         if self.mode == "live":
+            skipped = {key: value for key, value in getattr(self, "table_status", {}).items()
+                       if value["state"] == "skipped"}
             notices.extend(f"{key}已跳过：{value['reason']}" for key, value in
-                           getattr(self, "table_status", {}).items() if value["state"] == "skipped")
+                           skipped.items())
         if self.invalid_masks:
             notices.append("图框蒙版无效，预览暂用矩形，请重新上传该母版。")
         if self.foreground_errors:
@@ -754,10 +797,21 @@ class PreviewPane(ttk.Frame):
         if self.decoration_errors:
             notices.append("可选装饰无法显示：" + next(iter(self.decoration_errors.values())) + " 请重新读取母版。")
         if notices:
-            self.notice.configure(text="\n".join(notices))
+            details = "\n".join(notices)
+            if details != self.notice_details:
+                self.hide_notice_details()
+                self.notice_details = details
+            if len(skipped) == len(notices):
+                summary = (next(iter(skipped)) + "已跳过" if len(skipped) == 1
+                           else f"已跳过 {len(skipped)} 张表")
+            else:
+                summary = f"{len(notices)} 项预览提示"
+            self.notice.configure(text=summary + " · 悬停查看原因")
             if not self.notice.winfo_manager():
                 self.notice.pack(fill="x", after=self.caption, pady=(0, 5))
         else:
+            self.hide_notice_details()
+            self.notice_details = ""
             self.notice.pack_forget()
         self.trim_assets()
 
@@ -1188,8 +1242,14 @@ class PreviewPane(ttk.Frame):
             raster_key = (key, "product attributes", size)
             raster = source.resize(size, Image.Resampling.LANCZOS) if raster_key not in self.rasters else None
             self.layout_raster(raster_key, raster, x + left * scale, y)
-        for field, style in binding["fields"].items():
-            self.field_raster(values[field], style, x, scale, dy)
+        for field, field_binding in binding["fields"].items():
+            preview_binding = field_binding
+            if field_binding.get("preview_style"):
+                # Native attribute text keeps its layer transform. Imported
+                # preview_style includes that transform in its pixel size.
+                preview_binding = {**field_binding, "style": {
+                    **(field_binding.get("style") or {}), **field_binding["preview_style"]}}
+            self.field_raster(values[field], preview_binding, x, scale, dy)
 
     def paint_manifest(self, x, page):
         info, colors, products, scenes, tables = self.state_data[:5]
@@ -1291,7 +1351,7 @@ class PreviewPane(ttk.Frame):
             else:
                 self.picture(left, top, width, height, products.get(color), label="待绑定", background=None)
             self.mark_slot("product", color, left, top, width, height)
-            self.field_raster(color, {"rect": item["label_rect"], "style": {"size_px": 27, "align": "center", **color_style}}, x, scale)
+            self.field_raster(color, {"rect": item["label_rect"], "style": {"size_px": 27, **color_style, "align": "center"}}, x, scale)
         for name, table in geometry["tables"].items():
             self.table_raster(tables[name], table, x, scale)
         for slot_id, slot in geometry["view_slots"].items():

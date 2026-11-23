@@ -1,0 +1,4 @@
+interface:
+  display_name: "指定模特换笑脸"
+  short_description: "按参考校正模特身份并调整自然笑容，逐人合成保护商品，交付可编辑源文件与对照图"
+  default_prompt: "使用 $ecom-face-smile-edit，按参考照校正场景图中的指定模特并调整自然笑容，保留商品和场景，先展示人物还原小样与放大对照。"

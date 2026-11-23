@@ -8,9 +8,10 @@ import re
 import shutil
 import subprocess
 import time
+from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
-from tempfile import TemporaryDirectory
+from tempfile import mkdtemp
 
 from PIL import Image, ImageOps
 
@@ -341,7 +342,8 @@ class PhotoshopTimeoutError(RuntimeError):
     pass
 
 
-def run_photoshop(script, *, progid="Photoshop.Application", timeout=None, progress_path=None, notify=None):
+def run_photoshop(script, *, progid="Photoshop.Application", timeout=None, progress_path=None, notify=None,
+                  operation="母版解析", retry_action="上传"):
     command = r"""
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
@@ -438,7 +440,7 @@ try {
                         last_stage = stage
                         last_progress = now
                         if notify:
-                            notify(f"母版解析 · {stage}")
+                            notify(f"{operation} · {stage}")
                 if now - last_progress >= timeout or now - started >= 600:
                     if progress_path:
                         try:
@@ -450,8 +452,8 @@ try {
                     worker.kill()
                     worker.communicate()
                     raise PhotoshopTimeoutError(
-                        f"母版解析等待超时 · {last_stage}。工作台已结束等待。"
-                        "Photoshop 恢复响应后再重试上传。")
+                        f"{operation}等待超时 · {last_stage}。工作台已结束等待。"
+                        f"Photoshop 恢复响应后再重试{retry_action}。")
     if returncode:
         message = stderr.strip() or stdout.strip()
         if returncode == 2:
@@ -482,6 +484,28 @@ def stage_image(item, folder, filename, transparent):
     return {**item, "staged": str(destination)}
 
 
+@contextmanager
+def export_scratch(output_root):
+    """Keep timed-out native inputs available until Photoshop observes cancel."""
+    root = Path(output_root).resolve()
+    folder = Path(mkdtemp(prefix=".套版暂存-", dir=root)).resolve()
+    if folder.parent != root:
+        raise RuntimeError("生成暂存目录不在指定输出目录中。")
+    keep = False
+    try:
+        yield folder
+    except PhotoshopTimeoutError as error:
+        keep = True
+        error.scratch_directory = str(folder)
+        raise
+    finally:
+        if not keep:
+            current = folder.resolve()
+            if current != folder or current.parent != root:
+                raise RuntimeError("无法核对生成暂存目录，已停止自动清理。")
+            shutil.rmtree(folder)
+
+
 def export_detail(job, output_root, source_data="", notify=lambda message: None):
     # A job kept by an older window must not bypass automatic composition.
     job = {**job, "views": resolve_job_views(job, {}, []) if job.get("geometry") else {}}
@@ -496,8 +520,7 @@ def export_detail(job, output_root, source_data="", notify=lambda message: None)
         raise ValueError("确认后母版已变更，请重新运行预检。")
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
     final = output_root / f"{code}-{stamp}"
-    with TemporaryDirectory(prefix=".套版暂存-", dir=output_root) as temporary:
-        folder = Path(temporary)
+    with export_scratch(output_root) as folder:
         delivery = folder / "delivery"
         delivery.mkdir()
         notify("正在准备完整分辨率素材…")
@@ -523,19 +546,24 @@ def export_detail(job, output_root, source_data="", notify=lambda message: None)
         preview = delivery / f"{code}_详情预览.jpg"
         completed = folder / "photoshop-complete.txt"
         layout_verification = folder / "size-layout-verification.json"
+        progress = folder / "build.progress"
+        cancel = progress.with_suffix(".cancel")
         scripts = [(ROOT / "engine" / name).read_text(encoding="utf-8-sig") for name in ENGINE_FILES]
         script = folder / "build.jsx"
         for attempt in range(len(TABLE_NAMES) + 1):
-            for partial in (completed, layout_verification, psb, preview):
+            for partial in (completed, layout_verification, psb, preview, progress, cancel):
                 partial.unlink(missing_ok=True)
             payload = {**job, "products": products, "scenes": scenes, **extras, "template": str(template),
                        "output": str(psb), "preview": str(preview), "completed": str(completed),
-                       "layout_verification": str(layout_verification)}
+                       "layout_verification": str(layout_verification), "progress": str(progress), "cancel": str(cancel)}
             args = json.dumps(payload, ensure_ascii=True, allow_nan=False)
             script.write_text("\n\n".join(scripts) + f"\nrunDetailWorkbench({args});\n", encoding="utf-8-sig")
             notify("Photoshop 正在套版、保存 PSB 并重开核验…")
             try:
-                run_photoshop(script)
+                run_photoshop(script, timeout=240, progress_path=progress, notify=notify,
+                              operation="套版生成", retry_action="生成")
+            except PhotoshopTimeoutError:
+                raise
             except RuntimeError as error:
                 if not completed.is_file():
                     match = re.search(r"\[TABLE_LAYOUT:([^\]]+)\]\s*([^\r\n]*)", str(error))
